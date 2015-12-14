@@ -1,5 +1,8 @@
 package insert;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  *
  * @author Agarimo
@@ -29,13 +32,15 @@ public class Doc {
         this.codigo = codigo;
     }
 
-    public String getLink() {
-        return link;
+    public URL getLink() {
+        try {
+            return new URL(this.link);
+        } catch (MalformedURLException ex) {
+            return null;
+        }
     }
 
     public void setLink(String link) {
         this.link = link;
     }
-
-    
 }

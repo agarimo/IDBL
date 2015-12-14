@@ -24,6 +24,7 @@ import val.Fase;
 public class Var {
 
     public static Conexion con;
+    public static File fileData;
     public static Timming tm;
     public static Stats st;
     public static List<Fase> listFases;
@@ -48,9 +49,9 @@ public class Var {
     }
 
     private static void ficheros() {
+        fileData = new File("data");
+        fileData.mkdirs();
         File aux;
-        aux = new File("data");
-        aux.mkdirs();
         aux = new File("dsc");
         aux.mkdirs();
     }
@@ -63,19 +64,19 @@ public class Var {
         try {
             Document document = (Document) builder.build(xmlFile);
             Element config = document.getRootElement();
-            
+
             Element conexion = config.getChild("conexion");
             con.setDireccion(conexion.getChildText("db-host"));
             con.setPuerto(conexion.getChildText("db-port"));
             con.setUsuario(conexion.getChildText("db-username"));
             con.setPass(conexion.getChildText("db-password"));
-            
+
             Element fases = config.getChild("fases");
             List list = fases.getChildren();
 
             for (Iterator it = list.iterator(); it.hasNext();) {
                 Element fas = (Element) it.next();
-                
+
                 aux = new Fase(fas.getAttributeValue("nombre"));
                 aux.setEmpresaCon(fas.getChildText("econ"));
                 aux.setEmpresaSin(fas.getChildText("esin"));
@@ -85,7 +86,7 @@ public class Var {
                 listFases.add(aux);
             }
         } catch (IOException | JDOMException io) {
-            System.out.println(io.getMessage());
+            io.printStackTrace();
         }
     }
 }

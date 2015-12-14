@@ -9,12 +9,13 @@
 
 <AnchorPane id="AnchorPane" prefHeight="141.0" prefWidth="320" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="idbl.ViewC">
    <children>
-      <ProgressBar fx:id="progreso" layoutX="14.0" layoutY="53.0" prefHeight="40.0" prefWidth="292.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" />
-      <Label fx:id="label" alignment="CENTER" layoutX="14.0" layoutY="93.0" prefHeight="40.0" prefWidth="292.0" text="Label" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" />
-      <Label alignment="CENTER" layoutX="14.0" layoutY="9.0" prefHeight="40.0" prefWidth="292.0" text="IDBL LOADER" textAlignment="CENTER" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+      <ProgressBar fx:id="progreso" layoutX="14.0" layoutY="71.0" prefHeight="23.0" prefWidth="292.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+      <Label fx:id="label" alignment="CENTER" layoutX="14.0" layoutY="104.0" prefHeight="23.0" prefWidth="292.0" text="Label" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+      <Label alignment="CENTER" layoutX="14.0" layoutY="8.0" prefHeight="40.0" prefWidth="292.0" text="IDBL LOADER" textAlignment="CENTER" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
          <font>
             <Font name="Arial Black" size="19.0" />
          </font>
       </Label>
+      <Label fx:id="title" alignment="CENTER" layoutX="14.0" layoutY="48.0" prefHeight="23.0" prefWidth="292.0" text="Label" />
    </children>
 </AnchorPane>

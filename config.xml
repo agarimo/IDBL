@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+    <conexion>
+        <db-host>localhost</db-host>
+        <db-port>3306</db-port>
+        <db-username>admin</db-username>
+        <db-password>IkuinenK@@m.s84</db-password>
+    </conexion>
+    <fases>
+        <fase nombre="710">
+            <econ>715</econ>
+            <esin>714</esin>
+            <pcon>713</pcon>
+            <psin>713</psin>
+        </fase>
+        <fase nombre="711">
+            <econ>715</econ>
+            <esin>714</esin>
+            <pcon>711</pcon>
+            <psin>711</psin>
+        </fase>
+        <fase nombre="714">
+            <econ>715</econ>
+            <esin>714</esin>
+            <pcon>714</pcon>
+            <psin>714</psin>
+        </fase>
+    </fases>
+</config>
