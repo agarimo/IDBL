@@ -3,13 +3,13 @@ package insert;
 import static idbl.Var.con;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import util.Dates;
 import util.Sql;
-import util.Varios;
 
 /**
  *
@@ -36,7 +35,6 @@ public class Insercion extends Task {
 
     @Override
     protected Void call() {
-        updateTitle("Loading Files");
         file = new Fichero();
 
         load();
@@ -72,7 +70,11 @@ public class Insercion extends Task {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         }
-        insertMultas();
+        try {
+            insertMultas();
+        } catch (SQLException ex) {
+            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void insertDocumentos() throws SQLException, FileNotFoundException {
@@ -82,39 +84,80 @@ public class Insercion extends Task {
 
         Sql bd = new Sql(con);
         String sql = "INSERT INTO historico.documento (id,codigo,data) VALUES (?, ?, ?)";
-        PreparedStatement stmt = bd.con.prepareStatement(sql);
+        PreparedStatement st = bd.con.prepareStatement(sql);
         bd.con.setAutoCommit(false);
 
         for (int i = 0; i < documentos.size(); i++) {
-            updateProgress(i, documentos.size());
-            updateMessage("Cargando documento " + i + " de " + documentos.size());
+            updateProgress((i + 1), documentos.size());
+            updateMessage("Cargando documento " + (i + 1) + " de " + documentos.size());
             aux = documentos.get(i);
-            Varios.descargaArchivo(aux.getLink(), fl);
-
-            stmt.setString(1, aux.getId());
-            stmt.setString(2, aux.getCodigo());
-            FileInputStream fis = new FileInputStream(fl);
-            stmt.setBinaryStream(3, fis, (int) fl.length());
-            stmt.execute();
+//            Varios.descargaArchivo(aux.getLink(), fl);
+//
+//            st.setString(1, aux.getId());
+//            st.setString(2, aux.getCodigo());
+//            FileInputStream fis = new FileInputStream(fl);
+//            st.setBinaryStream(3, fis, (int) fl.length());
+//            st.execute();
         }
-        
-        bd.con.commit();
 
+//        bd.con.commit();
+//        fl.delete();
+        bd.close();
+        updateProgress(1, -1);
+        updateMessage("");
     }
 
-    private void insertMultas() {
+    private void insertMultas() throws SQLException {
         updateTitle("Loading Multas");
+        Ins aux;
+
+        Sql bd = new Sql(con);
+        String sql = "INSERT INTO historico.temp_historico (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
+                + "fecha_multa,articulo,cif,nombre,poblacion,matricula,euros,puntos,linea) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement st = bd.con.prepareStatement(sql);
+        bd.con.setAutoCommit(false);
+
+        for (int i = 0; i < multas.size(); i++) {
+            aux = multas.get(i);
+            updateProgress((i + 1), multas.size());
+            updateMessage("Cargando multa " + (i + 1) + " de " + multas.size());
+
+            st.setString(1, aux.getCodigoSancion());
+            st.setString(2, Dates.imprimeFecha(aux.getFechaPublicacion()));
+            st.setString(3, aux.getOrganismo());
+            st.setString(4, aux.getnBoe());
+            st.setString(5, aux.getFase());
+            st.setString(6, aux.getTipoJuridico());
+            st.setInt(7, Integer.parseInt(aux.getPlazo()));
+            st.setString(8, aux.getExpediente());
+            st.setString(9, Dates.imprimeFecha(aux.getFechaMulta()));
+            st.setString(10, aux.getArticulo());
+            st.setString(11, aux.getNif());
+            st.setString(12, aux.getSancionado());
+            st.setString(13, aux.getLocalidad());
+            st.setString(14, aux.getMatricula());
+            st.setString(15, aux.getCuantia());
+            st.setString(16, aux.getPuntos());
+            st.setString(17, aux.getLinea());
+
+            st.execute();
+        }
+
+        updateProgress(1, -1);
+        updateMessage("Commiteando en BBDD");
+        bd.con.commit();
+        updateMessage("");
     }
 
     private void load() {
         updateTitle("Parsing .ins Files");
         loadIns();
         updateTitle("Parsing .BB1 Files");
-//        loadBB1();
+        loadBB1();
     }
 
     private void loadBB1() {
-        System.out.println("Procesando " + file.getBB1().size() + " archivos .ins ");
         String[] split;
         List<String[]> list = new ArrayList();
         File aux;
@@ -134,7 +177,6 @@ public class Insercion extends Task {
     }
 
     private void loadIns() {
-        System.out.println("Procesando " + file.getIns().size() + " archivos .ins ");
         String[] split;
         List<String[]> list = new ArrayList();
         File aux;
@@ -159,7 +201,40 @@ public class Insercion extends Task {
     }
 
     private void splitBB1(String[] split) {
+        Ins aux = new Ins();
 
+        aux.setCodigoSancion(split[2].trim() + split[8].trim());
+        aux.setFechaPublicacion(util.Dates.formatFecha(split[1].trim(), "dd/MM/yyyy"));
+        aux.setOrganismo(split[16].trim());
+        aux.setnBoe(split[2].trim() + split[22].trim());
+        aux.setFase(split[3]);
+        aux.setTipoJuridico(split[4].trim());
+        aux.setPlazo(split[5]);
+        aux.setExpediente(split[10].trim());
+        aux.setFechaMulta(splitBB1parseFecha(split[11].trim()));
+        aux.setArticulo(split[12].trim());
+        aux.setNif(split[15].trim());
+        aux.setSancionado(split[13].trim());
+        aux.setLocalidad(split[25]);
+        aux.setMatricula(split[14].trim());
+        aux.setCuantia(split[17].trim());
+        aux.setPuntos(split[18].trim());
+        aux.setLinea(split[23].trim());
+//        aux.setLink(split[24].trim());
+
+    }
+
+    private Date splitBB1parseFecha(String fecha) {
+        Date aux;
+        if (fecha.equals("")) {
+            return null;
+        } else {
+            aux = util.Dates.formatFecha(fecha, "ddMMyy");
+            if (aux == null) {
+                aux = util.Dates.formatFecha(fecha, "MMddyy");
+            }
+        }
+        return aux;
     }
 
     private void splitDoc(String[] split) {
