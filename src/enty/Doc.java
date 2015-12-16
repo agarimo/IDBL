@@ -1,4 +1,4 @@
-package insert;
+package enty;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -1,8 +1,12 @@
 package insert;
 
+import enty.Ins;
+import enty.Doc;
+import idbl.Var;
 import static idbl.Var.con;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,11 +16,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.concurrent.Task;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import util.Dates;
 import util.Sql;
+import util.Varios;
 
 /**
  *
@@ -24,9 +29,11 @@ import util.Sql;
  */
 public class Insercion extends Task {
 
+    private static final Logger log = LogManager.getLogger(Insercion.class);
     Fichero file;
     List<Ins> multas;
     List<Doc> documentos;
+    Sql bd;
 
     public Insercion() {
         multas = new ArrayList();
@@ -36,14 +43,10 @@ public class Insercion extends Task {
     @Override
     protected Void call() {
         file = new Fichero();
-
         load();
         insert();
+        sqlTask();
 
-//        for (int i = 0; i < 10000; i++) {
-//                updateProgress(i, 10000);
-//                updateMessage("Iteracion "+i);
-//        }
         return null;
     }
 
@@ -55,9 +58,11 @@ public class Insercion extends Task {
                 aux.add(linea.split("\\|"));
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         }
         return aux;
     }
@@ -66,14 +71,18 @@ public class Insercion extends Task {
         try {
             insertDocumentos();
         } catch (SQLException ex) {
-            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         try {
             insertMultas();
         } catch (SQLException ex) {
-            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -82,7 +91,7 @@ public class Insercion extends Task {
         Doc aux;
         File fl = new File("temp.pdf");
 
-        Sql bd = new Sql(con);
+        bd = new Sql(con);
         String sql = "INSERT INTO historico.documento (id,codigo,data) VALUES (?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
         bd.con.setAutoCommit(false);
@@ -91,17 +100,17 @@ public class Insercion extends Task {
             updateProgress((i + 1), documentos.size());
             updateMessage("Cargando documento " + (i + 1) + " de " + documentos.size());
             aux = documentos.get(i);
-//            Varios.descargaArchivo(aux.getLink(), fl);
-//
-//            st.setString(1, aux.getId());
-//            st.setString(2, aux.getCodigo());
-//            FileInputStream fis = new FileInputStream(fl);
-//            st.setBinaryStream(3, fis, (int) fl.length());
-//            st.execute();
+            Varios.descargaArchivo(aux.getLink(), fl);
+
+            st.setString(1, aux.getId());
+            st.setString(2, aux.getCodigo());
+            FileInputStream fis = new FileInputStream(fl);
+            st.setBinaryStream(3, fis, (int) fl.length());
+            st.execute();
         }
 
-//        bd.con.commit();
-//        fl.delete();
+        bd.con.commit();
+        fl.delete();
         bd.close();
         updateProgress(1, -1);
         updateMessage("");
@@ -111,7 +120,7 @@ public class Insercion extends Task {
         updateTitle("Loading Multas");
         Ins aux;
 
-        Sql bd = new Sql(con);
+        bd = new Sql(con);
         String sql = "INSERT INTO historico.temp_historico (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
                 + "fecha_multa,articulo,cif,nombre,poblacion,matricula,euros,puntos,linea) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -211,7 +220,7 @@ public class Insercion extends Task {
         aux.setTipoJuridico(split[4].trim());
         aux.setPlazo(split[5]);
         aux.setExpediente(split[10].trim());
-        aux.setFechaMulta(splitBB1parseFecha(split[11].trim()));
+        aux.setFechaMulta(splitBB1_ParseFecha(split[11].trim()));
         aux.setArticulo(split[12].trim());
         aux.setNif(split[15].trim());
         aux.setSancionado(split[13].trim());
@@ -224,7 +233,7 @@ public class Insercion extends Task {
 
     }
 
-    private Date splitBB1parseFecha(String fecha) {
+    private Date splitBB1_ParseFecha(String fecha) {
         Date aux;
         if (fecha.equals("")) {
             return null;
@@ -269,5 +278,34 @@ public class Insercion extends Task {
         aux.setLinea(split[16]);
 
         multas.add(aux);
+    }
+
+    private void sqlTask() {
+        updateTitle("Ejecutando sqlTask");
+        
+        String sqlTask;
+        String query;
+        for (int i = 0; i < Var.sqlTask.length; i++) {
+            sqlTask = Var.sqlTask[i][0];
+            query = Var.sqlTask[i][1];
+            updateMessage("Ejecutando "+sqlTask);
+            
+            if(!sqlTask_ejecutar(query)){
+                break;
+            }
+        }
+    }
+
+    private boolean sqlTask_ejecutar(String query) {
+        try {
+            bd = new Sql(con);
+            bd.ejecutar(query);
+            bd.close();
+            return true;
+        } catch (SQLException ex) {
+            log.error(ex);
+//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
 }
