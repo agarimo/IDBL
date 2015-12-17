@@ -10,12 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +46,9 @@ public class Insercion extends Task {
         file = new Fichero();
         load();
         insert();
+        validar();
         sqlTask();
+        terminar();
 
         return null;
     }
@@ -58,39 +61,33 @@ public class Insercion extends Task {
                 aux.add(linea.split("\\|"));
             }
         } catch (FileNotFoundException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("LOAD LINES - " + ex);
         } catch (IOException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("LOAD LINES - " + ex);
         }
         return aux;
     }
 
-    private void insert() {
+    private void insert()  {
         try {
             insertDocumentos();
-        } catch (SQLException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FileNotFoundException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        } catch (SQLException | IOException ex) {
+            log.error("INSERT DOC - " + ex);
+        } 
+
         try {
             insertMultas();
         } catch (SQLException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("INSERT MULTAS - " + ex);
         }
     }
 
-    private void insertDocumentos() throws SQLException, FileNotFoundException {
+    private void insertDocumentos() throws SQLException, FileNotFoundException, IOException {
         updateTitle("Loading Documentos");
         Doc aux;
         File fl = new File("temp.pdf");
 
+        FileInputStream fis;
         bd = new Sql(con);
         String sql = "INSERT INTO historico.documento (id,codigo,data) VALUES (?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
@@ -104,14 +101,15 @@ public class Insercion extends Task {
 
             st.setString(1, aux.getId());
             st.setString(2, aux.getCodigo());
-            FileInputStream fis = new FileInputStream(fl);
+            fis = new FileInputStream(fl);
             st.setBinaryStream(3, fis, (int) fl.length());
             st.execute();
+            fis.close();
         }
 
         bd.con.commit();
-        fl.delete();
         bd.close();
+        fl.delete();
         updateProgress(1, -1);
         updateMessage("");
     }
@@ -162,27 +160,6 @@ public class Insercion extends Task {
     private void load() {
         updateTitle("Parsing .ins Files");
         loadIns();
-        updateTitle("Parsing .BB1 Files");
-        loadBB1();
-    }
-
-    private void loadBB1() {
-        String[] split;
-        List<String[]> list = new ArrayList();
-        File aux;
-        Iterator<File> it = file.getBB1().iterator();
-
-        while (it.hasNext()) {
-            aux = it.next();
-            list.addAll(cargaLineas(aux));
-        }
-
-        Iterator<String[]> itt = list.iterator();
-
-        while (itt.hasNext()) {
-            split = itt.next();
-            splitBB1(split);
-        }
     }
 
     private void loadIns() {
@@ -207,43 +184,6 @@ public class Insercion extends Task {
                 splitIns(split);
             }
         }
-    }
-
-    private void splitBB1(String[] split) {
-        Ins aux = new Ins();
-
-        aux.setCodigoSancion(split[2].trim() + split[8].trim());
-        aux.setFechaPublicacion(util.Dates.formatFecha(split[1].trim(), "dd/MM/yyyy"));
-        aux.setOrganismo(split[16].trim());
-        aux.setnBoe(split[2].trim() + split[22].trim());
-        aux.setFase(split[3]);
-        aux.setTipoJuridico(split[4].trim());
-        aux.setPlazo(split[5]);
-        aux.setExpediente(split[10].trim());
-        aux.setFechaMulta(splitBB1_ParseFecha(split[11].trim()));
-        aux.setArticulo(split[12].trim());
-        aux.setNif(split[15].trim());
-        aux.setSancionado(split[13].trim());
-        aux.setLocalidad(split[25]);
-        aux.setMatricula(split[14].trim());
-        aux.setCuantia(split[17].trim());
-        aux.setPuntos(split[18].trim());
-        aux.setLinea(split[23].trim());
-//        aux.setLink(split[24].trim());
-
-    }
-
-    private Date splitBB1_ParseFecha(String fecha) {
-        Date aux;
-        if (fecha.equals("")) {
-            return null;
-        } else {
-            aux = util.Dates.formatFecha(fecha, "ddMMyy");
-            if (aux == null) {
-                aux = util.Dates.formatFecha(fecha, "MMddyy");
-            }
-        }
-        return aux;
     }
 
     private void splitDoc(String[] split) {
@@ -281,31 +221,43 @@ public class Insercion extends Task {
     }
 
     private void sqlTask() {
-        updateTitle("Ejecutando sqlTask");
-        
+        updateTitle("Executing SQLTASK");
         String sqlTask;
         String query;
+
         for (int i = 0; i < Var.sqlTask.length; i++) {
             sqlTask = Var.sqlTask[i][0];
             query = Var.sqlTask[i][1];
-            updateMessage("Ejecutando "+sqlTask);
-            
-            if(!sqlTask_ejecutar(query)){
+            updateMessage("Ejecutando " + sqlTask);
+
+            if (!sqlTask_ejecutar(sqlTask, query)) {
+                updateTitle("ERROR en " + sqlTask);
+                updateMessage("Consulte el log para mas información");
+                updateProgress(0, 0);
                 break;
             }
         }
     }
 
-    private boolean sqlTask_ejecutar(String query) {
+    private boolean sqlTask_ejecutar(String sqlTask, String query) {
         try {
             bd = new Sql(con);
             bd.ejecutar(query);
             bd.close();
             return true;
         } catch (SQLException ex) {
-            log.error(ex);
-//            Logger.getLogger(Insercion.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(sqlTask + " - " + ex);
             return false;
         }
+    }
+
+    private void terminar() {
+        updateTitle("");
+        updateMessage("Proceso finalizado");
+        updateProgress(0, 0);
+    }
+    
+    private void validar(){
+        
     }
 }

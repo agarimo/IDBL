@@ -2,22 +2,22 @@
 <configuration status="WARN">
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+            <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}" />
         </Console>
-         <File name="Fichero" fileName="app.log">
-      <PatternLayout>
-        <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
-      </PatternLayout>
-    </File>
+        
+        <File name="execInfo" fileName="log/execInfo.log">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5level %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+        </File>
     </appenders>
 
     <loggers>
-        <root level="trace">
+        <root level="INFO">
             <appender-ref ref="Console" />
         </root>
-        <logger name="insert.Insercion" level="info" additivity="true">
-            <appender-ref ref="Console" />
-            <appender-ref ref="Fichero" />
+        <logger name="insert.Insercion" level="INFO" additivity="true">
+            <appender-ref ref="execInfo" />
         </logger>
     </loggers>
 </configuration>

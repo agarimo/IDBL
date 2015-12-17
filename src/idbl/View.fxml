@@ -16,6 +16,6 @@
             <Font name="Arial Black" size="19.0" />
          </font>
       </Label>
-      <Label fx:id="title" alignment="CENTER" layoutX="14.0" layoutY="48.0" prefHeight="23.0" prefWidth="292.0" text="Label" />
+      <Label fx:id="title" alignment="CENTER" layoutX="14.0" layoutY="48.0" prefHeight="23.0" prefWidth="292.0" text="Label" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" />
    </children>
 </AnchorPane>

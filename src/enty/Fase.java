@@ -1,17 +1,14 @@
-package val;
+package enty;
 
 import java.io.Serializable;
 
-public class Fase
-        implements Serializable, Comparable<Fase> {
-
+public class Fase implements Serializable, Comparable<Fase> {
     String id;
     String empresaCon;
     String empresaSin;
     String particularCon;
     String particularSin;
-    String art;
-    
+
     public Fase(String id) {
         this.id = id;
     }

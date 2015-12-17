@@ -7,45 +7,30 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
 import util.Conexion;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import val.Fase;
+import enty.Fase;
 
 /**
  *
  * @author Agarimo
  */
 public class Var {
-    
-    
+
     private static final Logger log = LogManager.getLogger(Var.class);
     public static Conexion con;
     public static File fileData;
     public static List<Fase> listFases;
-    public static List<String> listArt;
-    public static boolean isClasificando;
     public static String[][] sqlTask;
-    
 
     public static void init() {
-        logger();
         cargaDriverDB();
         ficheros();
-        con = new Conexion();
-        listFases = new ArrayList();
-        listArt = new ArrayList();
         cargaXML();
         cargaVariables();
-    }
-
-    private static void logger() {
-        LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
-        File file = new File("log4j2.xml");
-        context.setConfigLocation(file.toURI());
     }
 
     private static void cargaDriverDB() {
@@ -94,8 +79,8 @@ public class Var {
                 + "GROUP BY matricula";
 
         sqlTask[5][0] = "BUILD SANCION";
-        sqlTask[5][1] = "INSERT INTO historico.sancion (codigoSancion,expediente,fechaMulta,articulo,cuantia,puntos,nombre,localidad,linea,link) "
-                + "SELECT codigoSancion, expediente, fecha_multa, articulo, euros, puntos, nombre, poblacion, linea, link FROM historico.temp_historico";
+        sqlTask[5][1] = "INSERT INTO historico.sancion (codigoSancion,expediente,fechaMulta,articulo,cuantia,puntos,nombre,localidad,linea) "
+                + "SELECT codigoSancion, expediente, fecha_multa, articulo, euros, puntos, nombre, poblacion, linea FROM historico.temp_historico";
 
         sqlTask[6][0] = "BUILD MULTA";
         sqlTask[6][1] = "INSERT INTO historico.multa (idBoletin,idMatricula,idSancionado,idSancion,fase,plazo,fechaEntrada,fechaVencimiento) "
@@ -110,6 +95,8 @@ public class Var {
     }
 
     private static void cargaXML() {
+        con = new Conexion();
+        listFases = new ArrayList();
         Fase aux;
         SAXBuilder builder = new SAXBuilder();
         File xmlFile = new File("config.xml");

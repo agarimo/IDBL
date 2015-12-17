@@ -1,5 +1,7 @@
 package idbl;
 
+import enty.Fase;
+import java.util.Iterator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -27,7 +29,16 @@ public class main extends Application {
      */
     public static void main(String[] args) {
         Var.init();
-        launch(args);
+        
+        Fase fase;
+        Iterator<Fase> it = Var.listFases.iterator();
+        
+        while(it.hasNext()){
+            fase=it.next();
+            System.out.println(fase);
+        }
+        
+//        launch(args);
     }
     
 }
