@@ -1,8 +1,10 @@
 package enty;
 
 import java.io.Serializable;
+import util.Varios;
 
 public class Fase implements Serializable, Comparable<Fase> {
+
     String id;
     String empresaCon;
     String empresaSin;
@@ -90,5 +92,21 @@ public class Fase implements Serializable, Comparable<Fase> {
         String a = this.id;
         String b = o.getId();
         return a.compareTo(b);
+    }
+
+    public String SQLECon() {
+        return "UPDATE historico.temp_historico set fase=" + Varios.entrecomillar(this.empresaCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='E';";
+    }
+
+    public String SQLESin() {
+        return "UPDATE historico.temp_historico SET fase=" + Varios.entrecomillar(this.empresaSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='E';";
+    }
+
+    public String SQLPCon() {
+        return "UPDATE historico.temp_historico set fase=" + Varios.entrecomillar(this.particularCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='P';";
+    }
+
+    public String SQLPSin() {
+        return "UPDATE historico.temp_historico SET fase=" + Varios.entrecomillar(this.particularSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='P';";
     }
 }

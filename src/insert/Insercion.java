@@ -1,7 +1,10 @@
 package insert;
 
+import enty.Archivo;
 import enty.Ins;
 import enty.Doc;
+import enty.Fase;
+import enty.Stats;
 import idbl.Var;
 import static idbl.Var.con;
 import java.io.BufferedReader;
@@ -10,13 +13,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,45 +36,36 @@ public class Insercion extends Task {
     List<Ins> multas;
     List<Doc> documentos;
     Sql bd;
+    Stats stats;
 
     public Insercion() {
         multas = new ArrayList();
         documentos = new ArrayList();
+        stats = new Stats();
     }
 
     @Override
     protected Void call() {
-        file = new Fichero();
         load();
         insert();
         validar();
         sqlTask();
-        terminar();
+        stats.getCarga().setStatus("OK");
+        xit();
 
         return null;
     }
 
-    private List<String[]> cargaLineas(File archivo) {
-        List<String[]> aux = new ArrayList<>();
-        try (FileReader fr = new FileReader(archivo); BufferedReader br = new BufferedReader(fr)) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                aux.add(linea.split("\\|"));
-            }
-        } catch (FileNotFoundException ex) {
-            log.error("LOAD LINES - " + ex);
-        } catch (IOException ex) {
-            log.error("LOAD LINES - " + ex);
-        }
-        return aux;
+    private void callError() {
+
     }
 
-    private void insert()  {
+    private void insert() {
         try {
             insertDocumentos();
         } catch (SQLException | IOException ex) {
             log.error("INSERT DOC - " + ex);
-        } 
+        }
 
         try {
             insertMultas();
@@ -83,7 +75,7 @@ public class Insercion extends Task {
     }
 
     private void insertDocumentos() throws SQLException, FileNotFoundException, IOException {
-        updateTitle("Loading Documentos");
+        updateTitle("LOADING DOCUMENTOS");
         Doc aux;
         File fl = new File("temp.pdf");
 
@@ -115,7 +107,7 @@ public class Insercion extends Task {
     }
 
     private void insertMultas() throws SQLException {
-        updateTitle("Loading Multas");
+        updateTitle("LOADING MULTAS");
         Ins aux;
 
         bd = new Sql(con);
@@ -151,14 +143,20 @@ public class Insercion extends Task {
             st.execute();
         }
 
+        stats.getCarga().setMultas(multas.size());
+        stats.getCarga().setDocumentos(documentos.size());
+
         updateProgress(1, -1);
         updateMessage("Commiteando en BBDD");
         bd.con.commit();
+        bd.close();
         updateMessage("");
     }
 
     private void load() {
-        updateTitle("Parsing .ins Files");
+        updateTitle("LOADING FILES");
+        file = new Fichero();
+        updateTitle("PARSING FILES");
         loadIns();
     }
 
@@ -170,7 +168,7 @@ public class Insercion extends Task {
 
         while (it.hasNext()) {
             aux = it.next();
-            list.addAll(cargaLineas(aux));
+            list.addAll(loadInsFile(aux));
         }
 
         Iterator<String[]> itt = list.iterator();
@@ -186,6 +184,33 @@ public class Insercion extends Task {
         }
     }
 
+    private List<String[]> loadInsFile(File archivo) {
+        List<String[]> aux = new ArrayList<>();
+
+        try (FileReader fr = new FileReader(archivo); BufferedReader br = new BufferedReader(fr)) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                aux.add(linea.split("\\|"));
+            }
+            loadInsStats(archivo, aux.size());
+        } catch (FileNotFoundException ex) {
+            log.error("LOAD LINES - " + ex);
+        } catch (IOException ex) {
+            log.error("LOAD LINES - " + ex);
+        }
+
+        return aux;
+    }
+
+    private void loadInsStats(File file, int total) {
+        Archivo aux = new Archivo();
+        aux.setNombre(file.getName());
+        aux.setSize(file.length());
+        aux.setLineas(total);
+
+        stats.addArchivo(aux);
+    }
+
     private void splitDoc(String[] split) {
         Doc aux = new Doc();
 
@@ -199,29 +224,45 @@ public class Insercion extends Task {
     private void splitIns(String[] split) {
         Ins aux = new Ins();
 
-        aux.setFechaPublicacion(Dates.formatFecha(split[0], "yyyy-MM-dd"));
-        aux.setnBoe(split[1]);
-        aux.setOrganismo(split[2]);
-        aux.setFase(split[3]);
-        aux.setPlazo(split[4]);
-        aux.setCodigoSancion(split[5]);
-        aux.setExpediente(split[6]);
-        aux.setFechaMulta(Dates.formatFecha(split[7], "yyyy-MM-dd"));
-        aux.setArticulo(split[8]);
-        aux.setNif(split[9]);
-        aux.setTipoJuridico(split[10]);
-        aux.setSancionado(split[11]);
-        aux.setMatricula(split[12]);
-        aux.setCuantia(split[13]);
-        aux.setPuntos(split[14]);
-        aux.setLocalidad(split[15]);
-        aux.setLinea(split[16]);
+        aux.setFechaPublicacion(Dates.formatFecha(split[0].trim(), "yyyy-MM-dd"));
+        aux.setnBoe(split[1].trim());
+        aux.setOrganismo(split[2].trim());
+        aux.setFase(split[3].trim());
+        aux.setPlazo(split[4].trim());
+        aux.setCodigoSancion(split[5].trim());
+        aux.setExpediente(split[6].trim());
+        aux.setFechaMulta(Dates.formatFecha(split[7].trim(), "yyyy-MM-dd"));
+        aux.setArticulo(split[8].trim());
+        aux.setNif(split[9].trim());
+        aux.setTipoJuridico(split[10].trim());
+        aux.setSancionado(split[11].trim());
+        aux.setMatricula(split[12].trim());
+        aux.setCuantia(split[13].trim());
+        aux.setPuntos(splitIns_valPuntos(split[14].trim()));
+        aux.setLocalidad(split[15].trim());
+        aux.setLinea(split[16].trim());
 
         multas.add(aux);
     }
 
+    private String splitIns_valPuntos(String puntos) {
+        String aux = "";
+
+        try {
+            int a = Integer.parseInt(puntos);
+
+            if (a == 0 || a == 2 || a == 3 || a == 4 || a == 6) {
+                aux = Integer.toString(a);
+            }
+        } catch (Exception ex) {
+            aux = "";
+        }
+
+        return aux;
+    }
+
     private void sqlTask() {
-        updateTitle("Executing SQLTASK");
+        updateTitle("RUNNING SQLTASK");
         String sqlTask;
         String query;
 
@@ -237,6 +278,8 @@ public class Insercion extends Task {
                 break;
             }
         }
+        
+        stats.getCarga().setFin();
     }
 
     private boolean sqlTask_ejecutar(String sqlTask, String query) {
@@ -251,13 +294,60 @@ public class Insercion extends Task {
         }
     }
 
-    private void terminar() {
+    private void validar() {
+        updateTitle("RUNNING VALIDAR");
+        Fase fase;
+        Iterator<Fase> it = Var.listFases.iterator();
+
+        try {
+            bd = new Sql(Var.con);
+
+            while (it.hasNext()) {
+                fase = it.next();
+                updateMessage("Ejecutando FASE " + fase.getId() + " ECON");
+                bd.ejecutar(fase.SQLECon());
+                updateMessage("Ejecutando FASE " + fase.getId() + " ESIN");
+                bd.ejecutar(fase.SQLESin());
+                updateMessage("Ejecutando FASE " + fase.getId() + " PCON");
+                bd.ejecutar(fase.SQLPCon());
+                updateMessage("Ejecutando FASE " + fase.getId() + " PSIN");
+                bd.ejecutar(fase.SQLPSin());
+            }
+
+            bd.close();
+        } catch (SQLException ex) {
+            log.error("VALIDADOR - " + ex);
+        }
+    }
+
+    private void xit() {
+        xitStats();
         updateTitle("");
         updateMessage("Proceso finalizado");
         updateProgress(0, 0);
+        System.exit(0);
     }
-    
-    private void validar(){
-        
+
+    private void xitStats() {
+        updateTitle("RUNNING STATS");
+        updateMessage("");
+
+        Archivo archivo;
+        Iterator<Archivo> it = stats.getArchivos().iterator();
+
+        try {
+            bd = new Sql(Var.con);
+
+            while (it.hasNext()) {
+                archivo = it.next();
+                bd.ejecutar(archivo.SQLCrear());
+            }
+
+            bd.ejecutar(stats.getCarga().SQLCrear());
+            bd.close();
+
+        } catch (SQLException ex) {
+            log.error("STATS - " + ex);
+        }
     }
 }
