@@ -5,8 +5,8 @@ import enty.Ins;
 import enty.Doc;
 import enty.Fase;
 import enty.Stats;
+import idbl.Mail;
 import idbl.Var;
-import static idbl.Var.con;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +38,16 @@ public class Insercion extends Task {
     Sql bd;
     Stats stats;
 
+    private boolean load;
+    private boolean insert;
+    private boolean validar;
+    private boolean sqlTask;
+
     public Insercion() {
+        load = true;
+        insert = true;
+        validar = true;
+        sqlTask = true;
         multas = new ArrayList();
         documentos = new ArrayList();
         stats = new Stats();
@@ -47,29 +56,58 @@ public class Insercion extends Task {
     @Override
     protected Void call() {
         load();
-        insert();
-        validar();
-        sqlTask();
-        stats.getCarga().setStatus("OK");
-        xit();
+        if (load) {
+            insert();
+            if (insert) {
+                validar();
+                if (validar) {
+                    sqlTask();
+                    stats.getCarga().setFin();
+                    if (sqlTask) {
+                        stats.getCarga().setMultas(multas.size());
+                        stats.getCarga().setDocumentos(documentos.size());
+                        stats.getCarga().setStatus("OK");
+                        xit();
+                    }
+                }
+            }
+        }
+
+        if (!load || !insert || !validar || !sqlTask) {
+            callError();
+        }
 
         return null;
     }
 
     private void callError() {
+        updateTitle("ERROR EN EJECUCIÓN");
+        updateMessage("Compruebe el log para más información.");
+        updateProgress(0, 0);
 
+        Mail mail = new Mail();
+        mail.run();
+
+        try {
+            bd = new Sql(Var.con);
+            bd.ejecutar(Var.sqlTask[7][1]);
+        } catch (SQLException ex) {
+            log.warn("CALL.ERROR - " + ex);
+        }
     }
 
     private void insert() {
         try {
             insertDocumentos();
         } catch (SQLException | IOException ex) {
+            insert = false;
             log.error("INSERT DOC - " + ex);
         }
 
         try {
             insertMultas();
         } catch (SQLException ex) {
+            insert = false;
             log.error("INSERT MULTAS - " + ex);
         }
     }
@@ -80,7 +118,7 @@ public class Insercion extends Task {
         File fl = new File("temp.pdf");
 
         FileInputStream fis;
-        bd = new Sql(con);
+        bd = new Sql(Var.con);
         String sql = "INSERT INTO historico.documento (id,codigo,data) VALUES (?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
         bd.con.setAutoCommit(false);
@@ -110,7 +148,7 @@ public class Insercion extends Task {
         updateTitle("LOADING MULTAS");
         Ins aux;
 
-        bd = new Sql(con);
+        bd = new Sql(Var.con);
         String sql = "INSERT INTO historico.temp_historico (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
                 + "fecha_multa,articulo,cif,nombre,poblacion,matricula,euros,puntos,linea) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -142,9 +180,6 @@ public class Insercion extends Task {
 
             st.execute();
         }
-
-        stats.getCarga().setMultas(multas.size());
-        stats.getCarga().setDocumentos(documentos.size());
 
         updateProgress(1, -1);
         updateMessage("Commiteando en BBDD");
@@ -195,7 +230,9 @@ public class Insercion extends Task {
             loadInsStats(archivo, aux.size());
         } catch (FileNotFoundException ex) {
             log.error("LOAD LINES - " + ex);
+            load = false;
         } catch (IOException ex) {
+            load = false;
             log.error("LOAD LINES - " + ex);
         }
 
@@ -263,32 +300,32 @@ public class Insercion extends Task {
 
     private void sqlTask() {
         updateTitle("RUNNING SQLTASK");
-        String sqlTask;
+        String task;
         String query;
 
         for (int i = 0; i < Var.sqlTask.length; i++) {
-            sqlTask = Var.sqlTask[i][0];
+            task = Var.sqlTask[i][0];
             query = Var.sqlTask[i][1];
-            updateMessage("Ejecutando " + sqlTask);
+            updateMessage("Ejecutando " + task);
 
-            if (!sqlTask_ejecutar(sqlTask, query)) {
-                updateTitle("ERROR en " + sqlTask);
+            if (!sqlTask_ejecutar(task, query)) {
+                updateTitle("ERROR en " + task);
                 updateMessage("Consulte el log para mas información");
                 updateProgress(0, 0);
                 break;
             }
         }
-        
-        stats.getCarga().setFin();
+
     }
 
     private boolean sqlTask_ejecutar(String sqlTask, String query) {
         try {
-            bd = new Sql(con);
+            bd = new Sql(Var.con);
             bd.ejecutar(query);
             bd.close();
             return true;
         } catch (SQLException ex) {
+            this.sqlTask = false;
             log.error(sqlTask + " - " + ex);
             return false;
         }
@@ -316,6 +353,7 @@ public class Insercion extends Task {
 
             bd.close();
         } catch (SQLException ex) {
+            validar = false;
             log.error("VALIDADOR - " + ex);
         }
     }

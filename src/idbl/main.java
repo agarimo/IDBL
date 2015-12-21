@@ -1,6 +1,5 @@
 package idbl;
 
-import java.io.File;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -28,7 +27,11 @@ public class main extends Application {
      */
     public static void main(String[] args) {
         Var.init();
-        launch(args);
+//        launch(args);
+        
+        Mail mail= new Mail();
+        mail.run();
+        
     }
     
 }
