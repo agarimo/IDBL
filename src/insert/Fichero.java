@@ -26,7 +26,7 @@ public class Fichero {
             if (fichero.isDirectory()) {
                 loadFiles(fichero);
             } else {
-                if (fichero.getName().contains(".ins")) {
+                if (fichero.getName().contains(".ins") || fichero.getName().contains(".INS")) {
                     ins.add(fichero);
                 } else {
                     Files.moverArchivo(fichero, new File("dsc", fichero.getName()));
