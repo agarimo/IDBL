@@ -27,11 +27,6 @@ public class main extends Application {
      */
     public static void main(String[] args) {
         Var.init();
-//        launch(args);
-        
-        Mail mail= new Mail();
-        mail.run();
-        
+        launch(args);
     }
-    
 }

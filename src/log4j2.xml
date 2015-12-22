@@ -13,10 +13,13 @@
     </appenders>
 
     <loggers>
-        <root level="INFO">
+        <root level="WARN">
             <appender-ref ref="Console" />
         </root>
-        <logger name="insert.Insercion" level="INFO" additivity="true">
+        <logger name="insert.Insercion" level="WARN" additivity="true">
+            <appender-ref ref="execInfo" />
+        </logger>
+        <logger name="idbl.Var" level="WARN" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
     </loggers>

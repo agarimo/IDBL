@@ -76,6 +76,18 @@ public class Insercion extends Task {
         if (!load || !insert || !validar || !sqlTask) {
             callError();
         }
+        
+        if(file.isDsc()){
+            Mail mail = new Mail("FICHEROS DESCARTADOS","Se han descartado ficheros durante la carga\n"
+                    + "Compruebe el directorio /Dsc.");
+            try {
+                mail.run();
+            } catch (Exception ex) {
+                log.warn("MAIL - "+ex);
+            }
+            
+            
+        }
 
         return null;
     }
@@ -86,7 +98,11 @@ public class Insercion extends Task {
         updateProgress(0, 0);
 
         Mail mail = new Mail();
-        mail.run();
+        try {
+            mail.run();
+        } catch (Exception ex) {
+            log.warn("MAIL - "+ex);
+        }
 
         try {
             bd = new Sql(Var.con);
@@ -119,7 +135,7 @@ public class Insercion extends Task {
 
         FileInputStream fis;
         bd = new Sql(Var.con);
-        String sql = "INSERT INTO historico.documento (id,codigo,data) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO idbl.documento (id,codigo,data) VALUES (?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
         bd.con.setAutoCommit(false);
 
@@ -149,7 +165,7 @@ public class Insercion extends Task {
         Ins aux;
 
         bd = new Sql(Var.con);
-        String sql = "INSERT INTO historico.temp_historico (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
+        String sql = "INSERT INTO idbl.temp_idbl (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
                 + "fecha_multa,articulo,cif,nombre,poblacion,matricula,euros,puntos,linea) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
@@ -359,13 +375,14 @@ public class Insercion extends Task {
     }
 
     private void xit() {
+        file.cleanFiles();
         xitStats();
         updateTitle("");
         updateMessage("Proceso finalizado");
         updateProgress(0, 0);
         System.exit(0);
     }
-
+    
     private void xitStats() {
         updateTitle("RUNNING STATS");
         updateMessage("");

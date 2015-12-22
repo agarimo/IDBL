@@ -45,53 +45,53 @@ public class Var {
         sqlTask = new String[8][8];
 
         sqlTask[0][0] = "CLEAN TEMP";
-        sqlTask[0][1] = "DELETE FROM historico.temp_historico WHERE codigoSancion "
+        sqlTask[0][1] = "DELETE FROM idbl.temp_idbl WHERE codigoSancion "
                 + "IN "
-                + "(SELECT codigoSancion FROM historico.sancion)";
+                + "(SELECT codigoSancion FROM idbl.sancion)";
 
         sqlTask[1][0] = "BUILD ORIGEN";
-        sqlTask[1][1] = "INSERT INTO historico.origen (nombreOrigen) "
-                + "SELECT organismo FROM historico.temp_historico WHERE organismo "
+        sqlTask[1][1] = "INSERT INTO idbl.origen (nombreOrigen) "
+                + "SELECT organismo FROM idbl.temp_idbl WHERE organismo "
                 + "NOT IN "
-                + "(SELECT nombreOrigen FROM historico.origen WHERE historico.origen.nombreOrigen = historico.temp_historico.organismo) "
+                + "(SELECT nombreOrigen FROM idbl.origen WHERE idbl.origen.nombreOrigen = idbl.temp_idbl.organismo) "
                 + "GROUP BY organismo";
 
         sqlTask[2][0] = "BUILD BOLETIN";
-        sqlTask[2][1] = "INSERT INTO historico.boletin (nBoe,origen,fechaPublicacion) "
-                + "SELECT a.boe, b.idOrigen, a.fecha_publicacion from historico.temp_historico AS a "
-                + "LEFT JOIN historico.origen AS b ON a.organismo=b.nombreOrigen WHERE a.boe "
+        sqlTask[2][1] = "INSERT INTO idbl.boletin (nBoe,origen,fechaPublicacion) "
+                + "SELECT a.boe, b.idOrigen, a.fecha_publicacion from idbl.temp_idbl AS a "
+                + "LEFT JOIN idbl.origen AS b ON a.organismo=b.nombreOrigen WHERE a.boe "
                 + "NOT IN "
-                + "(SELECT nBoe FROM historico.boletin WHERE historico.boletin.nBoe = a.boe) "
+                + "(SELECT nBoe FROM idbl.boletin WHERE idbl.boletin.nBoe = a.boe) "
                 + "GROUP BY boe";
 
         sqlTask[3][0] = "BUILD SANCIONADO";
-        sqlTask[3][1] = "INSERT INTO historico.sancionado (nif,tipoJuridico,nombre) "
-                + "SELECT cif,tipoJuridico,nombre FROM historico.temp_historico WHERE cif "
+        sqlTask[3][1] = "INSERT INTO idbl.sancionado (nif,tipoJuridico,nombre) "
+                + "SELECT cif,tipoJuridico,nombre FROM idbl.temp_idbl WHERE cif "
                 + "NOT IN "
-                + "(SELECT cif FROM historico.sancionado WHERE historico.sancionado.nif = historico.temp_historico.cif) "
+                + "(SELECT cif FROM idbl.sancionado WHERE idbl.sancionado.nif = idbl.temp_idbl.cif) "
                 + "GROUP BY cif";
 
         sqlTask[4][0] = "BUILD VEHICULO";
-        sqlTask[4][1] = "INSERT INTO historico.vehiculo (matricula) "
-                + "SELECT matricula FROM historico.temp_historico WHERE matricula "
+        sqlTask[4][1] = "INSERT INTO idbl.vehiculo (matricula) "
+                + "SELECT matricula FROM idbl.temp_idbl WHERE matricula "
                 + "NOT IN "
-                + "(SELECT matricula FROM historico.vehiculo WHERE historico.vehiculo.matricula = historico.temp_historico.matricula) "
+                + "(SELECT matricula FROM idbl.vehiculo WHERE idbl.vehiculo.matricula = idbl.temp_idbl.matricula) "
                 + "GROUP BY matricula";
 
         sqlTask[5][0] = "BUILD SANCION";
-        sqlTask[5][1] = "INSERT INTO historico.sancion (codigoSancion,expediente,fechaMulta,articulo,cuantia,puntos,nombre,localidad,linea) "
-                + "SELECT codigoSancion, expediente, fecha_multa, articulo, euros, puntos, nombre, poblacion, linea FROM historico.temp_historico";
+        sqlTask[5][1] = "INSERT INTO idbl.sancion (codigoSancion,expediente,fechaMulta,articulo,cuantia,puntos,nombre,localidad,linea) "
+                + "SELECT codigoSancion, expediente, fecha_multa, articulo, euros, puntos, nombre, poblacion, linea FROM idbl.temp_idbl";
 
         sqlTask[6][0] = "BUILD MULTA";
-        sqlTask[6][1] = "INSERT INTO historico.multa (idBoletin,idMatricula,idSancionado,idSancion,fase,plazo,fechaEntrada,fechaVencimiento) "
-                + "SELECT b.idBoletin,c.idVehiculo,d.idSancionado,e.idSancion,a.fase,a.plazo,CURDATE(),DATE_ADD(a.fecha_publicacion, interval a.plazo day) FROM historico.temp_historico AS a "
-                + "LEFT JOIN historico.boletin AS b ON a.boe=b.nBoe "
-                + "LEFT JOIN historico.vehiculo AS c ON a.matricula=c.matricula "
-                + "LEFT JOIN historico.sancionado AS d ON a.cif=d.nif "
-                + "LEFT JOIN historico.sancion AS e ON a.codigoSancion=e.codigoSancion ";
+        sqlTask[6][1] = "INSERT INTO idbl.multa (idBoletin,idMatricula,idSancionado,idSancion,fase,plazo,fechaEntrada,fechaVencimiento) "
+                + "SELECT b.idBoletin,c.idVehiculo,d.idSancionado,e.idSancion,a.fase,a.plazo,CURDATE(),DATE_ADD(a.fecha_publicacion, interval a.plazo day) FROM idbl.temp_idbl AS a "
+                + "LEFT JOIN idbl.boletin AS b ON a.boe=b.nBoe "
+                + "LEFT JOIN idbl.vehiculo AS c ON a.matricula=c.matricula "
+                + "LEFT JOIN idbl.sancionado AS d ON a.cif=d.nif "
+                + "LEFT JOIN idbl.sancion AS e ON a.codigoSancion=e.codigoSancion ";
 
         sqlTask[7][0] = "CLEAN DB";
-        sqlTask[7][1] = "DELETE FROM historico.temp_historico";
+        sqlTask[7][1] = "DELETE FROM idbl.temp_idbl";
     }
 
     private static void cargaXML() {
@@ -137,5 +137,4 @@ public class Var {
         aux = new File("dsc");
         aux.mkdirs();
     }
-
 }
