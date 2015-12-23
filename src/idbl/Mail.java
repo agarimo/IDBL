@@ -1,6 +1,10 @@
 package idbl;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.Session;
@@ -14,20 +18,33 @@ import javax.mail.internet.MimeMessage;
  */
 public class Mail {
 
-    private String to;
-    private String subject;
-    private String msg;
+    private final String to;
+    private final String subject;
+    private final String msg;
+    InetAddress localHost;
 
     public Mail() {
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Mail.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
-        this.subject = "IDBL ERROR";
+        this.subject = "IDBL ERROR on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = "Ha ocurrido un error durante la carga de Multas.\n"
                 + "Consulte el Log para más información.";
     }
 
     public Mail(String subject, String msg) {
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Mail.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
-        this.subject = subject;
+        this.subject = subject+" on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = msg;
     }
 

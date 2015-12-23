@@ -76,32 +76,27 @@ public class Insercion extends Task {
         if (!load || !insert || !validar || !sqlTask) {
             callError();
         }
-        
-        if(file.isDsc()){
-            Mail mail = new Mail("FICHEROS DESCARTADOS","Se han descartado ficheros durante la carga\n"
+
+        if (file.isDsc()) {
+            Mail mail = new Mail("FICHEROS DESCARTADOS", "Se han descartado ficheros durante la carga\n"
                     + "Compruebe el directorio /Dsc.");
             try {
                 mail.run();
             } catch (Exception ex) {
-                log.warn("MAIL - "+ex);
+                log.warn("MAIL - " + ex);
             }
-            
-            
+
         }
 
         return null;
     }
 
     private void callError() {
-        updateTitle("ERROR EN EJECUCIÓN");
-        updateMessage("Compruebe el log para más información.");
-        updateProgress(0, 0);
-
         Mail mail = new Mail();
         try {
             mail.run();
         } catch (Exception ex) {
-            log.warn("MAIL - "+ex);
+            log.warn("MAIL - " + ex);
         }
 
         try {
@@ -110,6 +105,7 @@ public class Insercion extends Task {
         } catch (SQLException ex) {
             log.warn("CALL.ERROR - " + ex);
         }
+        System.exit(0);
     }
 
     private void insert() {
@@ -382,7 +378,7 @@ public class Insercion extends Task {
         updateProgress(0, 0);
         System.exit(0);
     }
-    
+
     private void xitStats() {
         updateTitle("RUNNING STATS");
         updateMessage("");
