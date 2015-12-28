@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="WARN">
+<configuration status="INFO">
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}" />
@@ -13,13 +13,13 @@
     </appenders>
 
     <loggers>
-        <root level="WARN">
+        <root level="INFO">
             <appender-ref ref="Console" />
         </root>
-        <logger name="insert.Insercion" level="WARN" additivity="true">
+        <logger name="insert.Insercion" level="INFO" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
-        <logger name="idbl.Var" level="WARN" additivity="true">
+        <logger name="idbl.Var" level="INFO" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
     </loggers>

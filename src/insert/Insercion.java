@@ -22,6 +22,7 @@ import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.Dates;
+import util.Files;
 import util.Sql;
 import util.Varios;
 
@@ -39,12 +40,14 @@ public class Insercion extends Task {
     Stats stats;
 
     private boolean load;
+    private boolean insertD;
     private boolean insert;
     private boolean validar;
     private boolean sqlTask;
 
     public Insercion() {
         load = true;
+        insertD = true;
         insert = true;
         validar = true;
         sqlTask = true;
@@ -57,6 +60,7 @@ public class Insercion extends Task {
     protected Void call() {
         load();
         if (load) {
+            insertD();
             insert();
             if (insert) {
                 validar();
@@ -85,9 +89,18 @@ public class Insercion extends Task {
             } catch (Exception ex) {
                 log.warn("MAIL - " + ex);
             }
-
         }
-
+        
+        if(!insertD){
+            callVolcadoDoc();
+            Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga\n"
+                    + "de Documentos.");
+            try {
+                mail.run();
+            } catch (Exception ex) {
+                log.warn("MAIL - " + ex);
+            }
+        }
         return null;
     }
 
@@ -107,20 +120,39 @@ public class Insercion extends Task {
         }
         System.exit(0);
     }
+    
+    private void callVolcadoDoc(){
+        
+        //volcar en el directorio DSC, si no lo borra al final.
+        Doc doc;
+        File aux = new File (Var.fileData,"docPendiente.ins");
+        StringBuilder sb = new StringBuilder();
+        Iterator<Doc> it = documentos.iterator();
+        
+        while(it.hasNext()){
+            doc = it.next();
+            sb.append(doc.toString());
+            sb.append(System.lineSeparator());
+        }
+        
+        Files.anexaArchivo(aux, sb.toString().trim());
+    }
 
     private void insert() {
-        try {
-            insertDocumentos();
-        } catch (SQLException | IOException ex) {
-            insert = false;
-            log.error("INSERT DOC - " + ex);
-        }
-
         try {
             insertMultas();
         } catch (SQLException ex) {
             insert = false;
             log.error("INSERT MULTAS - " + ex);
+        }
+    }
+
+    private void insertD() {
+        try {
+            insertDocumentos();
+        } catch (SQLException | IOException ex) {
+            insertD = false;
+            log.error("INSERT DOC - " + ex);
         }
     }
 

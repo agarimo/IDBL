@@ -30,7 +30,8 @@ public class Mail {
             Logger.getLogger(Mail.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+//        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+        this.to="noseponuncanada@gmail.com";
         this.subject = "IDBL ERROR on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = "Ha ocurrido un error durante la carga de Multas.\n"
                 + "Consulte el Log para más información.";

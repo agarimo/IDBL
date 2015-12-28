@@ -43,4 +43,11 @@ public class Doc {
     public void setLink(String link) {
         this.link = link;
     }
+
+    @Override
+    public String toString() {
+        return id + "|" + codigo + "|" + link;
+    }
+    
+    
 }
