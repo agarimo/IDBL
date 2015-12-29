@@ -122,10 +122,8 @@ public class Insercion extends Task {
     }
     
     private void callVolcadoDoc(){
-        
-        //volcar en el directorio DSC, si no lo borra al final.
         Doc doc;
-        File aux = new File (Var.fileData,"docPendiente.ins");
+        File aux = new File (Var.dscData,"docPendiente.ins");
         StringBuilder sb = new StringBuilder();
         Iterator<Doc> it = documentos.iterator();
         

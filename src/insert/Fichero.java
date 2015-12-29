@@ -40,7 +40,7 @@ public class Fichero {
                 if (fichero.getName().contains(".ins") || fichero.getName().contains(".INS")) {
                     ins.add(fichero);
                 } else {
-                    Files.moverArchivo(fichero, new File("dsc", fichero.getName()));
+                    Files.moverArchivo(fichero, new File(Var.dscData, fichero.getName()));
                     dsc = true;
                 }
             }

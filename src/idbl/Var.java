@@ -23,6 +23,7 @@ public class Var {
     private static final Logger log = LogManager.getLogger(Var.class);
     public static Conexion con;
     public static File fileData;
+    public static File dscData;
     public static List<Fase> listFases;
     public static String[][] sqlTask;
 
@@ -133,8 +134,7 @@ public class Var {
     private static void ficheros() {
         fileData = new File("data");
         fileData.mkdirs();
-        File aux;
-        aux = new File("dsc");
-        aux.mkdirs();
+        dscData = new File("dsc");
+        dscData.mkdirs();
     }
 }
