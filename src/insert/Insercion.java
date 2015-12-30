@@ -46,11 +46,11 @@ public class Insercion extends Task {
     private boolean sqlTask;
 
     public Insercion() {
-        load = true;
-        insertD = true;
-        insert = true;
-        validar = true;
-        sqlTask = true;
+        load = false;
+        insertD = false;
+        insert = false;
+        validar = false;
+        sqlTask = false;
         multas = new ArrayList();
         documentos = new ArrayList();
         stats = new Stats();
@@ -77,7 +77,7 @@ public class Insercion extends Task {
             }
         }
 
-        if (!load || !insert || !validar || !sqlTask) {
+        if (load || insert || validar || sqlTask) {
             callError();
         }
 
@@ -90,8 +90,8 @@ public class Insercion extends Task {
                 log.warn("MAIL - " + ex);
             }
         }
-        
-        if(!insertD){
+
+        if (!insertD) {
             callVolcadoDoc();
             Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga\n"
                     + "de Documentos.");
@@ -115,24 +115,34 @@ public class Insercion extends Task {
         try {
             bd = new Sql(Var.con);
             bd.ejecutar(Var.sqlTask[7][1]);
+            bd.close();
         } catch (SQLException ex) {
             log.warn("CALL.ERROR - " + ex);
         }
         System.exit(0);
     }
-    
-    private void callVolcadoDoc(){
+
+    private void callVolcadoDoc() {
         Doc doc;
-        File aux = new File (Var.dscData,"docPendiente.ins");
+        File aux = new File(Var.dscData, "docPendiente.ins");
+
+        if (!aux.exists()) {
+            try {
+                aux.createNewFile();
+            } catch (IOException ex) {
+                log.warn("VOLCADO DOC - " + ex);
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         Iterator<Doc> it = documentos.iterator();
-        
-        while(it.hasNext()){
+
+        while (it.hasNext()) {
             doc = it.next();
             sb.append(doc.toString());
             sb.append(System.lineSeparator());
         }
-        
+
         Files.anexaArchivo(aux, sb.toString().trim());
     }
 
@@ -140,7 +150,6 @@ public class Insercion extends Task {
         try {
             insertMultas();
         } catch (SQLException ex) {
-            insert = false;
             log.error("INSERT MULTAS - " + ex);
         }
     }
@@ -149,7 +158,6 @@ public class Insercion extends Task {
         try {
             insertDocumentos();
         } catch (SQLException | IOException ex) {
-            insertD = false;
             log.error("INSERT DOC - " + ex);
         }
     }
@@ -270,11 +278,7 @@ public class Insercion extends Task {
                 aux.add(linea.split("\\|"));
             }
             loadInsStats(archivo, aux.size());
-        } catch (FileNotFoundException ex) {
-            log.error("LOAD LINES - " + ex);
-            load = false;
-        } catch (IOException ex) {
-            load = false;
+        } catch (Exception ex) {
             log.error("LOAD LINES - " + ex);
         }
 
@@ -367,7 +371,6 @@ public class Insercion extends Task {
             bd.close();
             return true;
         } catch (SQLException ex) {
-            this.sqlTask = false;
             log.error(sqlTask + " - " + ex);
             return false;
         }
@@ -395,7 +398,6 @@ public class Insercion extends Task {
 
             bd.close();
         } catch (SQLException ex) {
-            validar = false;
             log.error("VALIDADOR - " + ex);
         }
     }

@@ -3,14 +3,13 @@ package idbl;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.apache.logging.log4j.LogManager;
 
 /**
  *
@@ -18,6 +17,7 @@ import javax.mail.internet.MimeMessage;
  */
 public class Mail {
 
+    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(Mail.class);
     private final String to;
     private final String subject;
     private final String msg;
@@ -27,7 +27,7 @@ public class Mail {
         try {
             localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
-            Logger.getLogger(Mail.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("GETIP - "+ex);
         }
         
 //        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
@@ -41,10 +41,11 @@ public class Mail {
         try {
             localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
-            Logger.getLogger(Mail.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("GETIP - "+ex);
         }
         
-        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+//        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+        this.to="noseponuncanada@gmail.com";
         this.subject = subject+" on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = msg;
     }
