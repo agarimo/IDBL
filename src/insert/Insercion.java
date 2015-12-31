@@ -58,6 +58,7 @@ public class Insercion extends Task {
 
     @Override
     protected Void call() {
+        log.info("Iniciando carga IDBL");
         load();
         if (load) {
             insertD();
@@ -71,13 +72,12 @@ public class Insercion extends Task {
                         stats.getCarga().setMultas(multas.size());
                         stats.getCarga().setDocumentos(documentos.size());
                         stats.getCarga().setStatus("OK");
-                        xit();
                     }
                 }
             }
         }
 
-        if (load || insert || validar || sqlTask) {
+        if (!sqlTask) {
             callError();
         }
 
@@ -93,14 +93,15 @@ public class Insercion extends Task {
 
         if (!insertD) {
             callVolcadoDoc();
-            Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga\n"
-                    + "de Documentos.");
+            Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga de Documentos.");
             try {
                 mail.run();
             } catch (Exception ex) {
                 log.warn("MAIL - " + ex);
             }
         }
+
+        xit();
         return null;
     }
 
@@ -119,7 +120,6 @@ public class Insercion extends Task {
         } catch (SQLException ex) {
             log.warn("CALL.ERROR - " + ex);
         }
-        System.exit(0);
     }
 
     private void callVolcadoDoc() {
@@ -149,6 +149,7 @@ public class Insercion extends Task {
     private void insert() {
         try {
             insertMultas();
+            insert = true;
         } catch (SQLException ex) {
             log.error("INSERT MULTAS - " + ex);
         }
@@ -157,6 +158,7 @@ public class Insercion extends Task {
     private void insertD() {
         try {
             insertDocumentos();
+            insertD = true;
         } catch (SQLException | IOException ex) {
             log.error("INSERT DOC - " + ex);
         }
@@ -239,13 +241,18 @@ public class Insercion extends Task {
     }
 
     private void load() {
-        updateTitle("LOADING FILES");
-        file = new Fichero();
-        updateTitle("PARSING FILES");
-        loadIns();
+        try {
+            updateTitle("LOADING FILES");
+            file = new Fichero();
+            updateTitle("PARSING FILES");
+            loadIns();
+            load = true;
+        } catch (Exception ex) {
+            log.error("LOAD LINES - " + ex);
+        }
     }
 
-    private void loadIns() {
+    private void loadIns() throws IOException {
         String[] split;
         List<String[]> list = new ArrayList();
         File aux;
@@ -269,18 +276,16 @@ public class Insercion extends Task {
         }
     }
 
-    private List<String[]> loadInsFile(File archivo) {
+    private List<String[]> loadInsFile(File archivo) throws FileNotFoundException, IOException {
         List<String[]> aux = new ArrayList<>();
+        FileReader fr = new FileReader(archivo);
+        BufferedReader br = new BufferedReader(fr);
+        String linea;
 
-        try (FileReader fr = new FileReader(archivo); BufferedReader br = new BufferedReader(fr)) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                aux.add(linea.split("\\|"));
-            }
-            loadInsStats(archivo, aux.size());
-        } catch (Exception ex) {
-            log.error("LOAD LINES - " + ex);
+        while ((linea = br.readLine()) != null) {
+            aux.add(linea.split("\\|"));
         }
+        loadInsStats(archivo, aux.size());
 
         return aux;
     }
@@ -358,10 +363,12 @@ public class Insercion extends Task {
                 updateTitle("ERROR en " + task);
                 updateMessage("Consulte el log para mas información");
                 updateProgress(0, 0);
+                sqlTask = false;
                 break;
+            } else {
+                sqlTask = true;
             }
         }
-
     }
 
     private boolean sqlTask_ejecutar(String sqlTask, String query) {
@@ -397,14 +404,20 @@ public class Insercion extends Task {
             }
 
             bd.close();
+            validar = true;
         } catch (SQLException ex) {
             log.error("VALIDADOR - " + ex);
         }
     }
 
     private void xit() {
-        file.cleanFiles();
-        xitStats();
+
+        if (sqlTask) {
+            file.cleanFiles();
+            xitStats();
+        }
+
+        log.info("Finalizado carga IDBL");
         updateTitle("");
         updateMessage("Proceso finalizado");
         updateProgress(0, 0);

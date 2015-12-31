@@ -1,7 +1,5 @@
 package idbl;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,13 +27,6 @@ public class main extends Application {
      */
     public static void main(String[] args) {
         Var.init();
-        Mail mail = new Mail();
-        try {
-            mail.run();
-            System.exit(0);
-        } catch (Exception ex) {
-            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        //        launch(args);
+        launch(args);
     }
 }

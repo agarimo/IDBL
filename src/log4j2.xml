@@ -2,12 +2,12 @@
 <configuration status="INFO">
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}" />
+            <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n}" />
         </Console>
         
         <File name="execInfo" fileName="log/execInfo.log">
             <PatternLayout>
-                <Pattern>%d [%t] %-5level %logger{36} - %msg%n</Pattern>
+                <Pattern>%d [%-5level] %logger{36} - %msg%n</Pattern>
             </PatternLayout>
         </File>
     </appenders>
@@ -16,13 +16,13 @@
         <root level="INFO">
             <appender-ref ref="Console" />
         </root>
-        <logger name="insert.Insercion" level="WARN" additivity="true">
+        <logger name="insert.Insercion" level="INFO" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
         <logger name="idbl.Var" level="WARN" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
-        <logger name="idbl.Mail" level="INFO" additivity="true">
+        <logger name="idbl.Mail" level="WARN" additivity="true">
             <appender-ref ref="execInfo" />
         </logger>
     </loggers>
