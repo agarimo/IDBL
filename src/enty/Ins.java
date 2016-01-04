@@ -1,12 +1,17 @@
 package enty;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import util.CalculaNif;
+import util.Regex;
 
 /**
  *
  * @author Agarimo
  */
 public class Ins {
+
     private Date fechaPublicacion;
     private String nBoe;
     private String organismo;
@@ -105,7 +110,7 @@ public class Ins {
     }
 
     public void setNif(String nif) {
-        this.nif = nif;
+        this.nif = checkNifPattern(checkNif(limpia(nif)));
     }
 
     public String getTipoJuridico() {
@@ -162,5 +167,69 @@ public class Ins {
 
     public void setLinea(String linea) {
         this.linea = linea;
+    }
+
+    private String limpia(String str) {
+        Pattern p = Pattern.compile("[^0-9A-Z]");
+        Matcher m = p.matcher(str);
+
+        if (m.find()) {
+            str = m.replaceAll("");
+        }
+        return str.trim();
+    }
+
+    private String checkNif(String nif) {
+        CalculaNif cn = new CalculaNif();
+        String aux;
+
+        try {
+            if (nif.length() < 9) {
+                aux = cn.calcular(nif);
+            } else {
+                if (cn.isvalido(nif)) {
+                    aux = nif;
+                } else {
+                    aux = cn.calcular(nif);
+                }
+            }
+
+            return aux;
+        } catch (Exception ex) {
+            return nif;
+        }
+    }
+
+    private String checkNifPattern(String nif) {
+        Regex rx = new Regex();
+        String str;
+
+        if (rx.isBuscar("[0-9]{4,7}[TRWAGMYFPDXBNJZSQVHLCKE]{1}", nif)) {
+            str = add0(nif, 9);
+        } else if (rx.isBuscar("[0]{1}[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]{1}", nif)) {
+            str = nif.substring(1, nif.length());
+        } else if (rx.isBuscar("[XYZ]{1}[0-9]{4,6}[TRWAGMYFPDXBNJZSQVHLCKE]{1}", nif)) {
+            str = nif.substring(0, 1);
+            str = str + add0(nif.substring(1, nif.length()), 8);
+        } else if (rx.isBuscar("[XYZ]{1}[0]{1}[0-9]{7}[TRWAGMYFPDXBNJZSQVHLCKE]{1}", nif)) {
+            str = nif.substring(0, 1);
+            str = str + nif.substring(2, nif.length());
+        } else if (rx.isBuscar("[ABCDEFGHJKLMNPQRSUVW]{1}[0]{1}[0-9]{8}", nif)) {
+            str = nif.substring(0, 1);
+            str = str + nif.substring(2, nif.length());
+        } else {
+            str = nif;
+        }
+
+        return str;
+    }
+
+    private String add0(String aux, int size) {
+
+        while (aux.length() < size) {
+            aux = "0" + aux;
+        }
+
+        return aux;
     }
 }

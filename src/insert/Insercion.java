@@ -173,7 +173,7 @@ public class Insercion extends Task {
         bd = new Sql(Var.con);
         String sql = "INSERT INTO idbl.documento (id,codigo,data) VALUES (?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
-        bd.con.setAutoCommit(false);
+        bd.con.setAutoCommit(true);
 
         for (int i = 0; i < documentos.size(); i++) {
             updateProgress((i + 1), documentos.size());
@@ -189,7 +189,7 @@ public class Insercion extends Task {
             fis.close();
         }
 
-        bd.con.commit();
+//        bd.con.commit();
         bd.close();
         fl.delete();
         updateProgress(1, -1);
