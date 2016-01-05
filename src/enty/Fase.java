@@ -95,18 +95,18 @@ public class Fase implements Serializable, Comparable<Fase> {
     }
 
     public String SQLECon() {
-        return "UPDATE historico.temp_historico set fase=" + Varios.entrecomillar(this.empresaCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='E';";
+        return "UPDATE idbl.temp_idbl set fase=" + Varios.entrecomillar(this.empresaCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='E';";
     }
 
     public String SQLESin() {
-        return "UPDATE historico.temp_historico SET fase=" + Varios.entrecomillar(this.empresaSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='E';";
+        return "UPDATE idbl.temp_idbl SET fase=" + Varios.entrecomillar(this.empresaSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='E';";
     }
 
     public String SQLPCon() {
-        return "UPDATE historico.temp_historico set fase=" + Varios.entrecomillar(this.particularCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='P';";
+        return "UPDATE idbl.temp_idbl set fase=" + Varios.entrecomillar(this.particularCon) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos!='0' and puntos!='') and tipoJuridico='P';";
     }
 
     public String SQLPSin() {
-        return "UPDATE historico.temp_historico SET fase=" + Varios.entrecomillar(this.particularSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='P';";
+        return "UPDATE idbl.temp_idbl SET fase=" + Varios.entrecomillar(this.particularSin) + " where fase=" + Varios.entrecomillar(this.id) + " and (puntos='0' or puntos='') and tipoJuridico='P';";
     }
 }

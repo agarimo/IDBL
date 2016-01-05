@@ -45,7 +45,7 @@ public class Var {
     private static void cargaVariables() {
         sqlTask = new String[8][8];
 
-        sqlTask[0][0] = "CLEAN TEMP";
+        sqlTask[0][0] = "CLEAN DUPLICATES";
         sqlTask[0][1] = "DELETE FROM idbl.temp_idbl WHERE codigoSancion "
                 + "IN "
                 + "(SELECT codigoSancion FROM idbl.sancion)";

@@ -28,5 +28,9 @@ public class main extends Application {
     public static void main(String[] args) {
         Var.init();
         launch(args);
+        
+//        String aux = "12345678901234567890";
+//        System.out.println(aux.substring(0, 10));
+//        System.exit(0);
     }
 }

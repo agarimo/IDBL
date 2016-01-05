@@ -48,6 +48,7 @@ public class Fichero {
     }
 
     public void cleanFiles() {
+        File pdf = new File("temp.pdf");
         File[] archivos = Var.fileData.listFiles();
 
         for (File archivo : archivos) {
@@ -60,6 +61,10 @@ public class Fichero {
 
         if (block.exists()) {
             block.delete();
+        }
+        
+        if(pdf.exists()){
+            pdf.delete();
         }
     }
 

@@ -66,7 +66,7 @@ public class Insercion extends Task {
             if (insert) {
                 validar();
                 if (validar) {
-                    sqlTask();
+//                    sqlTask();
                     stats.getCarga().setFin();
                     if (sqlTask) {
                         stats.getCarga().setMultas(multas.size());
@@ -78,7 +78,7 @@ public class Insercion extends Task {
         }
 
         if (!sqlTask) {
-            callError();
+//            callError();
         }
 
         if (file.isDsc()) {
@@ -177,10 +177,12 @@ public class Insercion extends Task {
 
         for (int i = 0; i < documentos.size(); i++) {
             updateProgress((i + 1), documentos.size());
-            updateMessage("Cargando documento " + (i + 1) + " de " + documentos.size());
+            updateMessage("Descargando documento " + (i + 1) + " de " + documentos.size());
             aux = documentos.get(i);
+            
             Varios.descargaArchivo(aux.getLink(), fl);
-
+            updateMessage("Subiendo documento " + (i + 1) + " de " + documentos.size());
+            
             st.setString(1, aux.getId());
             st.setString(2, aux.getCodigo());
             fis = new FileInputStream(fl);
@@ -189,7 +191,6 @@ public class Insercion extends Task {
             fis.close();
         }
 
-//        bd.con.commit();
         bd.close();
         fl.delete();
         updateProgress(1, -1);

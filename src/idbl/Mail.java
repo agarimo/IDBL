@@ -30,8 +30,8 @@ public class Mail {
             log.error("GETIP - "+ex);
         }
         
-        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
-//        this.to="noseponuncanada@gmail.com";
+//        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+        this.to="noseponuncanada@gmail.com";
         this.subject = "IDBL ERROR on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = "Ha ocurrido un error durante la carga de Multas.\n"
                 + "Consulte el Log para más información.";
@@ -44,8 +44,8 @@ public class Mail {
             log.error("GETIP - "+ex);
         }
         
-        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
-//        this.to="noseponuncanada@gmail.com";
+//        this.to="carlos.datamer@gmail.com,agarimosoft@gmail.com";
+        this.to="noseponuncanada@gmail.com";
         this.subject = subject+" on "+localHost.getHostName()+" - "+localHost.getHostAddress();
         this.msg = msg;
     }
