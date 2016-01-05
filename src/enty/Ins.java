@@ -46,7 +46,7 @@ public class Ins {
     }
 
     public void setnBoe(String nBoe) {
-        this.nBoe = nBoe;
+        this.nBoe = resize(nBoe, 20);
     }
 
     public String getOrganismo() {
@@ -54,7 +54,7 @@ public class Ins {
     }
 
     public void setOrganismo(String organismo) {
-        this.organismo = organismo;
+        this.organismo = resize(organismo, 100);
     }
 
     public String getFase() {
@@ -62,7 +62,7 @@ public class Ins {
     }
 
     public void setFase(String fase) {
-        this.fase = fase;
+        this.fase = resize(fase, 3);
     }
 
     public String getPlazo() {
@@ -78,7 +78,7 @@ public class Ins {
     }
 
     public void setCodigoSancion(String codigoSancion) {
-        this.codigoSancion = codigoSancion;
+        this.codigoSancion = resize(codigoSancion, 20);
     }
 
     public String getExpediente() {
@@ -86,7 +86,7 @@ public class Ins {
     }
 
     public void setExpediente(String expediente) {
-        this.expediente = expediente;
+        this.expediente = resize(expediente, 60);
     }
 
     public Date getFechaMulta() {
@@ -102,7 +102,7 @@ public class Ins {
     }
 
     public void setArticulo(String articulo) {
-        this.articulo = articulo;
+        this.articulo = resize(articulo,80);
     }
 
     public String getNif() {
@@ -110,7 +110,7 @@ public class Ins {
     }
 
     public void setNif(String nif) {
-        this.nif = checkNifPattern(checkNif(limpia(nif)));
+        this.nif = resize(checkNifPattern(checkNif(limpia(nif))),15);
     }
 
     public String getTipoJuridico() {
@@ -126,7 +126,7 @@ public class Ins {
     }
 
     public void setSancionado(String sancionado) {
-        this.sancionado = sancionado;
+        this.sancionado = resize(sancionado,100);
     }
 
     public String getMatricula() {
@@ -134,7 +134,7 @@ public class Ins {
     }
 
     public void setMatricula(String matricula) {
-        this.matricula = matricula;
+        this.matricula = resize(matricula,12);
     }
 
     public String getCuantia() {
@@ -142,7 +142,7 @@ public class Ins {
     }
 
     public void setCuantia(String cuantia) {
-        this.cuantia = cuantia;
+        this.cuantia = resize(cuantia,15);
     }
 
     public String getPuntos() {
@@ -150,7 +150,7 @@ public class Ins {
     }
 
     public void setPuntos(String puntos) {
-        this.puntos = puntos;
+        this.puntos = resize(puntos,3);
     }
 
     public String getLocalidad() {
@@ -158,7 +158,7 @@ public class Ins {
     }
 
     public void setLocalidad(String localidad) {
-        this.localidad = localidad;
+        this.localidad = resize(localidad,100);
     }
 
     public String getLinea() {
@@ -166,7 +166,15 @@ public class Ins {
     }
 
     public void setLinea(String linea) {
-        this.linea = linea;
+        this.linea = resize(linea,300);
+    }
+
+    private String resize(String aux, int size) {
+        if (aux.length() > size) {
+            return aux.substring(0, size);
+        } else {
+            return aux;
+        }
     }
 
     private String limpia(String str) {

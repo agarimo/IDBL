@@ -202,8 +202,8 @@ public class Insercion extends Task {
         Ins aux;
 
         bd = new Sql(Var.con);
-        String sql = "INSERT INTO idbl.temp_idbl (codigoSancion,fecha_publicacion,organismo,boe,fase,tipojuridico,plazo,expediente,"
-                + "fecha_multa,articulo,cif,nombre,poblacion,matricula,euros,puntos,linea) "
+        String sql = "INSERT INTO idbl.temp_idbl (codigo,fecha_publicacion,organismo,n_boe,fase,tipo_juridico,plazo,expediente,"
+                + "fecha_multa,articulo,cif,nombre,localidad,matricula,cuantia,puntos,linea) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement st = bd.con.prepareStatement(sql);
         bd.con.setAutoCommit(false);

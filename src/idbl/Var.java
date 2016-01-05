@@ -46,30 +46,30 @@ public class Var {
         sqlTask = new String[8][8];
 
         sqlTask[0][0] = "CLEAN DUPLICATES";
-        sqlTask[0][1] = "DELETE FROM idbl.temp_idbl WHERE codigoSancion "
+        sqlTask[0][1] = "DELETE FROM idbl.temp_idbl WHERE codigo "
                 + "IN "
-                + "(SELECT codigoSancion FROM idbl.sancion)";
+                + "(SELECT codigo FROM idbl.sancion)";
 
         sqlTask[1][0] = "BUILD ORIGEN";
-        sqlTask[1][1] = "INSERT INTO idbl.origen (nombreOrigen) "
+        sqlTask[1][1] = "INSERT INTO idbl.origen (organismo) "
                 + "SELECT organismo FROM idbl.temp_idbl WHERE organismo "
                 + "NOT IN "
-                + "(SELECT nombreOrigen FROM idbl.origen WHERE idbl.origen.nombreOrigen = idbl.temp_idbl.organismo) "
+                + "(SELECT organismo FROM idbl.origen WHERE idbl.origen.organismo = idbl.temp_idbl.organismo) "
                 + "GROUP BY organismo";
 
         sqlTask[2][0] = "BUILD BOLETIN";
-        sqlTask[2][1] = "INSERT INTO idbl.boletin (nBoe,origen,fechaPublicacion) "
-                + "SELECT a.boe, b.idOrigen, a.fecha_publicacion from idbl.temp_idbl AS a "
-                + "LEFT JOIN idbl.origen AS b ON a.organismo=b.nombreOrigen WHERE a.boe "
+        sqlTask[2][1] = "INSERT INTO idbl.boletin (id_origen,n_boe,fecha_publicacion) "
+                + "SELECT b.id, a.n_boe, a.fecha_publicacion from idbl.temp_idbl AS a "
+                + "LEFT JOIN idbl.origen AS b ON a.organismo=b.organismo WHERE a.n_boe "
                 + "NOT IN "
-                + "(SELECT nBoe FROM idbl.boletin WHERE idbl.boletin.nBoe = a.boe) "
-                + "GROUP BY boe";
+                + "(SELECT n_boe FROM idbl.boletin WHERE idbl.boletin.n_boe = a.n_boe) "
+                + "GROUP BY a.n_boe";
 
         sqlTask[3][0] = "BUILD SANCIONADO";
-        sqlTask[3][1] = "INSERT INTO idbl.sancionado (nif,tipoJuridico,nombre) "
-                + "SELECT cif,tipoJuridico,nombre FROM idbl.temp_idbl WHERE cif "
+        sqlTask[3][1] = "INSERT INTO idbl.sancionado (cif,tipo_juridico,nombre) "
+                + "SELECT cif,tipo_juridico,nombre FROM idbl.temp_idbl WHERE cif "
                 + "NOT IN "
-                + "(SELECT cif FROM idbl.sancionado WHERE idbl.sancionado.nif = idbl.temp_idbl.cif) "
+                + "(SELECT cif FROM idbl.sancionado WHERE idbl.sancionado.cif = idbl.temp_idbl.cif) "
                 + "GROUP BY cif";
 
         sqlTask[4][0] = "BUILD VEHICULO";
@@ -80,16 +80,16 @@ public class Var {
                 + "GROUP BY matricula";
 
         sqlTask[5][0] = "BUILD SANCION";
-        sqlTask[5][1] = "INSERT INTO idbl.sancion (codigoSancion,expediente,fechaMulta,articulo,cuantia,puntos,nombre,localidad,linea) "
-                + "SELECT codigoSancion, expediente, fecha_multa, articulo, euros, puntos, nombre, poblacion, linea FROM idbl.temp_idbl";
+        sqlTask[5][1] = "INSERT INTO idbl.sancion (codigo,expediente,fecha_multa,articulo,cuantia,puntos,nombre,localidad,linea) "
+                + "SELECT codigo, expediente, fecha_multa, articulo, cuantia, puntos, nombre, localidad, linea FROM idbl.temp_idbl";
 
         sqlTask[6][0] = "BUILD MULTA";
-        sqlTask[6][1] = "INSERT INTO idbl.multa (idBoletin,idMatricula,idSancionado,idSancion,fase,plazo,fechaEntrada,fechaVencimiento) "
-                + "SELECT b.idBoletin,c.idVehiculo,d.idSancionado,e.idSancion,a.fase,a.plazo,CURDATE(),DATE_ADD(a.fecha_publicacion, interval a.plazo day) FROM idbl.temp_idbl AS a "
-                + "LEFT JOIN idbl.boletin AS b ON a.boe=b.nBoe "
+        sqlTask[6][1] = "INSERT INTO idbl.multa (id_boletin,id_vehiculo,id_sancionado,id_sancion,fase,plazo,fecha_entrada,fecha_vencimiento) "
+                + "SELECT b.id,c.id,d.id,e.id,a.fase,a.plazo,CURDATE(),DATE_ADD(a.fecha_publicacion, interval a.plazo day) FROM idbl.temp_idbl AS a "
+                + "LEFT JOIN idbl.boletin AS b ON a.n_boe=b.n_boe "
                 + "LEFT JOIN idbl.vehiculo AS c ON a.matricula=c.matricula "
-                + "LEFT JOIN idbl.sancionado AS d ON a.cif=d.nif "
-                + "LEFT JOIN idbl.sancion AS e ON a.codigoSancion=e.codigoSancion ";
+                + "LEFT JOIN idbl.sancionado AS d ON a.cif=d.cif "
+                + "LEFT JOIN idbl.sancion AS e ON a.codigo=e.codigo ";
 
         sqlTask[7][0] = "CLEAN DB";
         sqlTask[7][1] = "DELETE FROM idbl.temp_idbl";
