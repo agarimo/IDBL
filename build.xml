@@ -50,4 +50,8 @@
     nbproject/build-impl.xml and nbproject/jfx-impl.xml.
 
     -->
+    <target name="-post-compile"> 
+        <copy file="config.xml" flatten="true" todir="${dist.dir}"/> 
+    </target> 
+    
 </project>

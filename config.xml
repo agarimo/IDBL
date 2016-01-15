@@ -7,6 +7,9 @@
         <db-username>admin</db-username>
         <db-password>IkuinenK@@m.s84</db-password>
     </conexion>
+    <insercion>
+        <documents>false</documents>
+    </insercion>
     <fases>
         <fase nombre="710">
             <econ>715</econ>

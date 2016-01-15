@@ -22,6 +22,7 @@ public class Var {
 
     private static final Logger log = LogManager.getLogger(Var.class);
     public static Conexion con;
+    public static boolean insercionDoc;
     public static File fileData;
     public static File dscData;
     public static List<Fase> listFases;
@@ -111,6 +112,15 @@ public class Var {
             con.setPuerto(conexion.getChildText("db-port"));
             con.setUsuario(conexion.getChildText("db-username"));
             con.setPass(conexion.getChildText("db-password"));
+            
+            Element insercion = config.getChild("insercion");
+            String insDoc = insercion.getChildText("documents");
+            
+            if(insDoc.equals("true")){
+                insercionDoc=true;
+            }else{
+                insercionDoc=false;
+            }
 
             Element fases = config.getChild("fases");
             List list = fases.getChildren();

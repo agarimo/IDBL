@@ -61,7 +61,7 @@ public class Insercion extends Task {
         log.info("Iniciando carga IDBL");
         load();
         if (load) {
-            insertD();
+            callDocuments();
             insert();
             if (insert) {
                 validar();
@@ -81,28 +81,24 @@ public class Insercion extends Task {
             callError();
         }
 
-        if (file.isDsc()) {
-            Mail mail = new Mail("FICHEROS DESCARTADOS", "Se han descartado ficheros durante la carga\n"
-                    + "Compruebe el directorio /Dsc.");
-            try {
-                mail.run();
-            } catch (Exception ex) {
-                log.warn("MAIL - " + ex);
-            }
-        }
-
-        if (!insertD) {
-            callVolcadoDoc();
-            Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga de Documentos.");
-            try {
-                mail.run();
-            } catch (Exception ex) {
-                log.warn("MAIL - " + ex);
-            }
-        }
-
         xit();
         return null;
+    }
+
+    private void callDocuments() {
+        if (Var.insercionDoc) {
+            insertD();
+
+            if (!insertD) {
+                callVolcadoDoc();
+                Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga de Documentos.");
+                try {
+                    mail.run();
+                } catch (Exception ex) {
+                    log.warn("MAIL - " + ex);
+                }
+            }
+        }
     }
 
     private void callError() {
@@ -273,6 +269,16 @@ public class Insercion extends Task {
                 splitDoc(split);
             } else if (split.length == 17) {
                 splitIns(split);
+            }
+        }
+
+        if (file.isDsc()) {
+            Mail mail = new Mail("FICHEROS DESCARTADOS", "Se han descartado ficheros durante la carga\n"
+                    + "Compruebe el directorio /Dsc.");
+            try {
+                mail.run();
+            } catch (Exception ex) {
+                log.warn("MAIL - " + ex);
             }
         }
     }
