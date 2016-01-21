@@ -153,11 +153,28 @@ public class Insercion extends Task {
 
     private void insertD() {
         try {
+            insertDClearDuplicates();
             insertDocumentos();
             insertD = true;
         } catch (SQLException | IOException ex) {
             log.error("INSERT DOC - " + ex);
         }
+    }
+
+    private void insertDClearDuplicates() throws SQLException {
+        updateTitle("LIMPIANDO DOCUMENTOS");
+        List<Doc> toDelete = new ArrayList();
+
+        bd = new Sql(Var.con);
+
+        for (Doc documento : documentos) {
+            if (bd.buscar(documento.SQLBuscar()) > 0) {
+                toDelete.add(documento);
+            }
+        }
+        bd.close();
+
+        documentos.removeAll(toDelete);
     }
 
     private void insertDocumentos() throws SQLException, FileNotFoundException, IOException {
@@ -425,9 +442,6 @@ public class Insercion extends Task {
         }
 
         log.info("Finalizado carga IDBL");
-        updateTitle("");
-        updateMessage("Proceso finalizado");
-        updateProgress(0, 0);
         System.exit(0);
     }
 

@@ -62,8 +62,8 @@ public class Fichero {
         if (block.exists()) {
             block.delete();
         }
-        
-        if(pdf.exists()){
+
+        if (pdf.exists()) {
             pdf.delete();
         }
     }

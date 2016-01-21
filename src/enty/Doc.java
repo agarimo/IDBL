@@ -49,5 +49,9 @@ public class Doc {
         return id + "|" + codigo + "|" + link;
     }
     
+    public String SQLBuscar(){
+        return "SELECT id FROM idbl.documento WHERE id="+this.id;
+    }
+    
     
 }
