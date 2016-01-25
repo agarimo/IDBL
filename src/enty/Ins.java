@@ -177,6 +177,11 @@ public class Ins {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Ins{" + "linea=" + linea + '}';
+    }
+
     private String limpia(String str) {
         Pattern p = Pattern.compile("[^0-9A-Z]");
         Matcher m = p.matcher(str);

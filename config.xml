@@ -8,7 +8,8 @@
         <db-password>IkuinenK@@m.s84</db-password>
     </conexion>
     <insercion>
-        <documents>false</documents>
+        <documents>true</documents>
+        <mail>true</mail>
     </insercion>
     <fases>
         <fase nombre="710">

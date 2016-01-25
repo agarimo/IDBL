@@ -51,12 +51,12 @@ public class Fichero {
         File pdf = new File("temp.pdf");
         File[] archivos = Var.fileData.listFiles();
 
-        for (File archivo : archivos) {
-            if (archivo.isDirectory()) {
+        try {
+            for (File archivo : archivos) {
                 Files.borraDirectorio(archivo);
-            } else {
-                archivo.delete();
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         if (block.exists()) {

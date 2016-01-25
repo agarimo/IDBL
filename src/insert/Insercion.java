@@ -7,6 +7,7 @@ import enty.Fase;
 import enty.Stats;
 import idbl.Mail;
 import idbl.Var;
+import static idbl.Var.sqlTask;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,13 +74,14 @@ public class Insercion extends Task {
                         stats.getCarga().setMultas(multas.size());
                         stats.getCarga().setDocumentos(documentos.size());
                         stats.getCarga().setStatus("OK");
+                    } else {
+                        callError();
                     }
                 }
+            } else {
+                stats.getCarga().setFin();
+                sqlTask = true;
             }
-        }
-
-        if (!sqlTask) {
-            callError();
         }
 
         xit();
@@ -91,30 +94,34 @@ public class Insercion extends Task {
 
             if (!insertD) {
                 callVolcadoDoc();
-                Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga de Documentos.");
-                try {
-                    mail.run();
-                } catch (Exception ex) {
-                    log.warn("MAIL - " + ex);
+                if (Var.mailAviso) {
+                    Mail mail = new Mail("DOCUMENT ERROR", "Se ha producido un error en la carga de Documentos.");
+                    try {
+                        mail.run();
+                    } catch (Exception ex) {
+                        log.warn("MAIL - " + ex);
+                    }
                 }
             }
         }
     }
 
     private void callError() {
-        Mail mail = new Mail();
-        try {
-            mail.run();
-        } catch (Exception ex) {
-            log.warn("MAIL - " + ex);
-        }
+        if (Var.mailAviso) {
+            Mail mail = new Mail();
+            try {
+                mail.run();
+            } catch (Exception ex) {
+                log.warn("MAIL - " + ex);
+            }
 
-        try {
-            bd = new Sql(Var.con);
-            bd.ejecutar(Var.sqlTask[7][1]);
-            bd.close();
-        } catch (SQLException ex) {
-            log.warn("CALL.ERROR - " + ex);
+            try {
+                bd = new Sql(Var.con);
+                bd.ejecutar(Var.sqlTask[7][1]);
+                bd.close();
+            } catch (SQLException ex) {
+                log.warn("CALL.ERROR - " + ex);
+            }
         }
     }
 
@@ -143,11 +150,15 @@ public class Insercion extends Task {
     }
 
     private void insert() {
-        try {
-            insertMultas();
-            insert = true;
-        } catch (SQLException ex) {
-            log.error("INSERT MULTAS - " + ex);
+        if (multas.isEmpty()) {
+            insert = false;
+        } else {
+            try {
+                insertMultas();
+                insert = true;
+            } catch (SQLException ex) {
+                log.error("INSERT MULTAS - " + ex);
+            }
         }
     }
 
@@ -163,18 +174,25 @@ public class Insercion extends Task {
 
     private void insertDClearDuplicates() throws SQLException {
         updateTitle("LIMPIANDO DOCUMENTOS");
-        List<Doc> toDelete = new ArrayList();
+        Doc documento;
+        List<Doc> cleanList = new ArrayList();
 
         bd = new Sql(Var.con);
 
-        for (Doc documento : documentos) {
-            if (bd.buscar(documento.SQLBuscar()) > 0) {
-                toDelete.add(documento);
+        for (int i = 0; i < documentos.size(); i++) {
+            documento = documentos.get(i);
+            updateProgress((i + 1), documentos.size());
+            updateMessage("Comprobando documento " + (i + 1) + " de " + documentos.size());
+
+            if (bd.buscar(documento.SQLBuscar()) == -1) {
+                cleanList.add(documento);
             }
         }
-        bd.close();
 
-        documentos.removeAll(toDelete);
+        bd.close();
+        documentos.clear();
+        documentos.addAll(cleanList);
+
     }
 
     private void insertDocumentos() throws SQLException, FileNotFoundException, IOException {
@@ -311,6 +329,9 @@ public class Insercion extends Task {
         }
         loadInsStats(archivo, aux.size());
 
+        br.close();
+        fr.close();
+
         return aux;
     }
 
@@ -375,23 +396,56 @@ public class Insercion extends Task {
 
     private void sqlTask() {
         updateTitle("RUNNING SQLTASK");
-        String task;
-        String query;
 
-        for (int i = 0; i < Var.sqlTask.length; i++) {
-            task = Var.sqlTask[i][0];
-            query = Var.sqlTask[i][1];
-            updateMessage("Ejecutando " + task);
+        if (sqlTaskClean()) {
+            String task;
+            String query;
 
-            if (!sqlTask_ejecutar(task, query)) {
-                updateTitle("ERROR en " + task);
-                updateMessage("Consulte el log para mas información");
-                updateProgress(0, 0);
-                sqlTask = false;
-                break;
-            } else {
-                sqlTask = true;
+            for (int i = 0; i < Var.sqlTask.length; i++) {
+                task = Var.sqlTask[i][0];
+                query = Var.sqlTask[i][1];
+                updateMessage("Ejecutando " + task);
+
+                if (!sqlTask_ejecutar(task, query)) {
+                    updateTitle("ERROR en " + task);
+                    updateMessage("Consulte el log para mas información");
+                    updateProgress(0, 0);
+                    sqlTask = false;
+                    break;
+                } else {
+                    sqlTask = true;
+                }
             }
+        } else {
+            sqlTask = true;
+        }
+    }
+
+    private boolean sqlTaskClean() {
+        String status = "CLEAN DUPLICATES";
+        String query = "DELETE FROM idbl.temp_idbl WHERE codigo "
+                + "IN "
+                + "(SELECT codigo FROM idbl.sancion)";
+
+        if (sqlTask_ejecutar(status, query)) {
+            return sqlTaskCleanCount();
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean sqlTaskCleanCount() {
+        int count;
+        try {
+            bd = new Sql(Var.con);
+            count = bd.getInt("SELECT count(*) FROM idbl.temp_idbl;");
+            bd.close();
+
+            return count != 0;
+        } catch (SQLException ex) {
+            log.error(sqlTask + " - " + ex);
+            return false;
         }
     }
 
@@ -435,14 +489,16 @@ public class Insercion extends Task {
     }
 
     private void xit() {
-
         if (sqlTask) {
-            file.cleanFiles();
             xitStats();
+            file.cleanFiles();
         }
 
         log.info("Finalizado carga IDBL");
-        System.exit(0);
+
+        Platform.runLater(() -> {
+            System.exit(0);
+        });
     }
 
     private void xitStats() {
@@ -463,7 +519,7 @@ public class Insercion extends Task {
             bd.ejecutar(stats.getCarga().SQLCrear());
             bd.close();
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             log.error("STATS - " + ex);
         }
     }
