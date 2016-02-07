@@ -19,7 +19,7 @@ public class main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("View.fxml"));
 
         Scene scene = new Scene(root);
-        
+
         stage.initStyle(StageStyle.TRANSPARENT);
 
         stage.setScene(scene);
@@ -32,10 +32,5 @@ public class main extends Application {
     public static void main(String[] args) {
         Var.init();
         launch(args);
-        
-//        CheckDoc cd = new CheckDoc();
-//        cd.run();
-//        
-//        System.exit(0);
     }
 }
