@@ -1,6 +1,6 @@
 package idbl;
 
-import java.io.File;
+import ScriptDoc.CheckDoc;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,5 +32,10 @@ public class main extends Application {
     public static void main(String[] args) {
         Var.init();
         launch(args);
+        
+//        CheckDoc cd = new CheckDoc();
+//        cd.run();
+//        
+//        System.exit(0);
     }
 }
