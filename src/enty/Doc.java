@@ -2,6 +2,7 @@ package enty;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 /**
  *
@@ -11,6 +12,7 @@ public class Doc {
 
     private String id;
     private String codigo;
+    private String fecha;
     private String link;
 
     public Doc() {
@@ -32,6 +34,14 @@ public class Doc {
         this.codigo = codigo;
     }
 
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
     public URL getLink() {
         try {
             return new URL(this.link);
@@ -44,11 +54,6 @@ public class Doc {
         this.link = link;
     }
 
-    @Override
-    public String toString() {
-        return id + "|" + codigo + "|" + link;
-    }
-    
     public String SQLBuscar(){
         return "SELECT id FROM idbl.documento WHERE id="+this.id;
     }

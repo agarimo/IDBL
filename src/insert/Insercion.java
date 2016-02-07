@@ -7,7 +7,6 @@ import enty.Fase;
 import enty.Stats;
 import idbl.Mail;
 import idbl.Var;
-import static idbl.Var.sqlTask;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -198,32 +197,32 @@ public class Insercion extends Task {
     private void insertDocumentos() throws SQLException, FileNotFoundException, IOException {
         updateTitle("LOADING DOCUMENTOS");
         Doc aux;
-        File fl = new File("temp.pdf");
+        File dir;
+        File fl;
 
-        FileInputStream fis;
         bd = new Sql(Var.con);
-        String sql = "INSERT INTO idbl.documento (id,codigo,data) VALUES (?, ?, ?)";
-        PreparedStatement st = bd.con.prepareStatement(sql);
-        bd.con.setAutoCommit(true);
+        String sql = "INSERT INTO idbl.documento (id,fecha,codigo) VALUES (?, ?, ?)";
+        PreparedStatement st = bd.getCon().prepareStatement(sql);
+        bd.getCon().setAutoCommit(true);
 
         for (int i = 0; i < documentos.size(); i++) {
             updateProgress((i + 1), documentos.size());
+            
             updateMessage("Descargando documento " + (i + 1) + " de " + documentos.size());
             aux = documentos.get(i);
-
+            dir = new File(Var.ftpFileSystem,aux.getFecha());
+            dir.mkdirs();
+            fl = new File(dir,aux.getCodigo()+".pdf");
             Varios.descargaArchivo(aux.getLink(), fl);
+            
             updateMessage("Subiendo documento " + (i + 1) + " de " + documentos.size());
-
             st.setString(1, aux.getId());
-            st.setString(2, aux.getCodigo());
-            fis = new FileInputStream(fl);
-            st.setBinaryStream(3, fis, (int) fl.length());
+            st.setString(2, aux.getFecha());
+            st.setString(3, aux.getCodigo());
             st.execute();
-            fis.close();
         }
 
         bd.close();
-        fl.delete();
         updateProgress(1, -1);
         updateMessage("");
     }
@@ -236,8 +235,8 @@ public class Insercion extends Task {
         String sql = "INSERT INTO idbl.temp_idbl (codigo,fecha_publicacion,organismo,n_boe,fase,tipo_juridico,plazo,expediente,"
                 + "fecha_multa,articulo,cif,nombre,localidad,matricula,cuantia,puntos,linea) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement st = bd.con.prepareStatement(sql);
-        bd.con.setAutoCommit(false);
+        PreparedStatement st = bd.getCon().prepareStatement(sql);
+        bd.getCon().setAutoCommit(false);
 
         for (int i = 0; i < multas.size(); i++) {
             aux = multas.get(i);
@@ -267,7 +266,7 @@ public class Insercion extends Task {
 
         updateProgress(1, -1);
         updateMessage("Commiteando en BBDD");
-        bd.con.commit();
+        bd.getCon().commit();
         bd.close();
         updateMessage("");
     }
@@ -300,7 +299,7 @@ public class Insercion extends Task {
         while (itt.hasNext()) {
             split = itt.next();
 
-            if (split.length == 3) {
+            if (split.length == 4) {
                 splitDoc(split);
             } else if (split.length == 17) {
                 splitIns(split);
@@ -348,8 +347,9 @@ public class Insercion extends Task {
         Doc aux = new Doc();
 
         aux.setId(split[0]);
-        aux.setCodigo(split[1]);
-        aux.setLink(split[2]);
+        aux.setFecha(split[1]);
+        aux.setCodigo(split[2]);
+        aux.setLink(split[3]);
 
         documentos.add(aux);
     }

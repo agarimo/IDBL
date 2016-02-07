@@ -27,6 +27,7 @@ public class Var {
     public static boolean mailAviso;
     public static File fileData;
     public static File dscData;
+    public static File ftpFileSystem;
     public static List<Fase> listFases;
     public static String[][] sqlTask;
 
@@ -114,9 +115,9 @@ public class Var {
             
             String insDoc = insercion.getChildText("documents");
             insercionDoc = insDoc.equals("true");
-            
             String insMail = insercion.getChildText("documents");
             insercionDoc = insMail.equals("true");
+            ftpFileSystem = new File (insercion.getChildText("ftp-filesystem"));
             
             
 

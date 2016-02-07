@@ -10,6 +10,7 @@
     <insercion>
         <documents>true</documents>
         <mail>true</mail>
+        <ftp-filesystem>E:\Documentos</ftp-filesystem>
     </insercion>
     <fases>
         <fase nombre="710">
