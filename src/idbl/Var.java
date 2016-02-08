@@ -115,7 +115,7 @@ public class Var {
             
             String insDoc = insercion.getChildText("documents");
             insercionDoc = insDoc.equals("true");
-            String insMail = insercion.getChildText("documents");
+            String insMail = insercion.getChildText("mail");
             insercionDoc = insMail.equals("true");
             ftpFileSystem = new File (insercion.getChildText("ftp-filesystem"));
             
