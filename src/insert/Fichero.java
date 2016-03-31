@@ -1,11 +1,11 @@
 package insert;
 
+import files.Util;
 import idbl.Var;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import util.Files;
 
 /**
  *
@@ -40,7 +40,7 @@ public class Fichero {
                 if (fichero.getName().contains(".ins") || fichero.getName().contains(".INS")) {
                     ins.add(fichero);
                 } else {
-                    Files.moverArchivo(fichero, new File(Var.dscData, fichero.getName()));
+                    Util.moverArchivo(fichero, new File(Var.dscData, fichero.getName()));
                     dsc = true;
                 }
             }
@@ -53,7 +53,7 @@ public class Fichero {
 
         try {
             for (File archivo : archivos) {
-                Files.borraDirectorio(archivo);
+                Util.borraDirectorio(archivo);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

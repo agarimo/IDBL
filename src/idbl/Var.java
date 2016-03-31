@@ -7,13 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import util.Conexion;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import enty.Fase;
-import util.Files;
+import sql.Conexion;
+
 
 /**
  *
@@ -84,7 +84,7 @@ public class Var {
 
         sqlTask[5][0] = "BUILD MULTA";
         sqlTask[5][1] = "INSERT INTO idbl.multa (id_boletin,id_vehiculo,id_sancionado,id_sancion,fase,plazo,fecha_entrada,fecha_vencimiento) "
-                + "SELECT b.id,c.id,d.id,e.id,a.fase,a.plazo,CURDATE(),DATE_ADD(a.fecha_publicacion, interval a.plazo day) FROM idbl.temp_idbl AS a "
+                + "SELECT b.id,c.id,d.id,e.id,a.fase,a.plazo,CURDATE(),a.fecha_vencimiento FROM idbl.temp_idbl AS a "
                 + "LEFT JOIN idbl.boletin AS b ON a.n_boe=b.n_boe "
                 + "LEFT JOIN idbl.vehiculo AS c ON a.matricula=c.matricula "
                 + "LEFT JOIN idbl.sancionado AS d ON a.cif=d.cif "
@@ -142,8 +142,9 @@ public class Var {
 
     private static void ficheros() {
         fileData = new File("data");
-        Files.creaDirectorio(fileData);
         dscData = new File("dsc");
-        Files.creaDirectorio(dscData);
+        
+        fileData.mkdirs();
+        dscData.mkdirs();
     }
 }

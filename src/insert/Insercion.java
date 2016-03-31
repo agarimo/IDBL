@@ -5,6 +5,7 @@ import enty.Ins;
 import enty.Doc;
 import enty.Fase;
 import enty.Stats;
+import files.Util;
 import idbl.Mail;
 import idbl.Var;
 import java.io.BufferedReader;
@@ -21,9 +22,8 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sql.Sql;
 import util.Dates;
-import util.Files;
-import util.Sql;
 import util.Varios;
 
 /**
@@ -42,6 +42,7 @@ public class Insercion extends Task {
     private boolean load;
     private boolean insertD;
     private boolean insert;
+    private boolean errorInsert;
     private boolean validar;
     private boolean sqlTask;
 
@@ -76,6 +77,8 @@ public class Insercion extends Task {
                         callError();
                     }
                 }
+            } else if (errorInsert) {
+                callError();
             } else {
                 stats.getCarga().setFin();
                 sqlTask = true;
@@ -144,7 +147,7 @@ public class Insercion extends Task {
             sb.append(System.lineSeparator());
         }
 
-        Files.anexaArchivo(aux, sb.toString().trim());
+        Util.anexaArchivo(aux, sb.toString().trim());
     }
 
     private void insert() {
@@ -154,7 +157,9 @@ public class Insercion extends Task {
             try {
                 insertMultas();
                 insert = true;
+                errorInsert = false;
             } catch (SQLException ex) {
+                errorInsert = true;
                 log.error("INSERT MULTAS - " + ex);
             }
         }
@@ -206,14 +211,14 @@ public class Insercion extends Task {
 
         for (int i = 0; i < documentos.size(); i++) {
             updateProgress((i + 1), documentos.size());
-            
+
             updateMessage("Descargando documento " + (i + 1) + " de " + documentos.size());
             aux = documentos.get(i);
-            dir = new File(Var.ftpFileSystem,aux.getFecha());
+            dir = new File(Var.ftpFileSystem, aux.getFecha());
             dir.mkdirs();
-            fl = new File(dir,aux.getCodigo()+".pdf");
+            fl = new File(dir, aux.getCodigo() + ".pdf");
             Varios.descargaArchivo(aux.getLink(), fl);
-            
+
             updateMessage("Subiendo documento " + (i + 1) + " de " + documentos.size());
             st.setString(1, aux.getId());
             st.setString(2, aux.getFecha());
@@ -231,9 +236,9 @@ public class Insercion extends Task {
         Ins aux;
 
         bd = new Sql(Var.con);
-        String sql = "INSERT INTO idbl.temp_idbl (codigo,fecha_publicacion,organismo,n_boe,fase,tipo_juridico,plazo,expediente,"
+        String sql = "INSERT INTO idbl.temp_idbl (codigo,fecha_publicacion,fecha_vencimiento,organismo,n_boe,fase,tipo_juridico,plazo,expediente,"
                 + "fecha_multa,articulo,cif,nombre,localidad,matricula,cuantia,puntos,linea) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement st = bd.getCon().prepareStatement(sql);
         bd.getCon().setAutoCommit(false);
 
@@ -244,21 +249,22 @@ public class Insercion extends Task {
 
             st.setString(1, aux.getCodigoSancion());
             st.setString(2, Dates.imprimeFecha(aux.getFechaPublicacion()));
-            st.setString(3, aux.getOrganismo());
-            st.setString(4, aux.getnBoe());
-            st.setString(5, aux.getFase());
-            st.setString(6, aux.getTipoJuridico());
-            st.setInt(7, Integer.parseInt(aux.getPlazo()));
-            st.setString(8, aux.getExpediente());
-            st.setString(9, Dates.imprimeFecha(aux.getFechaMulta()));
-            st.setString(10, aux.getArticulo());
-            st.setString(11, aux.getNif());
-            st.setString(12, aux.getSancionado());
-            st.setString(13, aux.getLocalidad());
-            st.setString(14, aux.getMatricula());
-            st.setString(15, aux.getCuantia());
-            st.setString(16, aux.getPuntos());
-            st.setString(17, aux.getLinea());
+            st.setString(3, Dates.imprimeFecha(aux.getFechaVencimiento()));
+            st.setString(4, aux.getOrganismo());
+            st.setString(5, aux.getnBoe());
+            st.setString(6, aux.getFase());
+            st.setString(7, aux.getTipoJuridico());
+            st.setString(8, aux.getPlazo());
+            st.setString(9, aux.getExpediente());
+            st.setString(10, Dates.imprimeFecha(aux.getFechaMulta()));
+            st.setString(11, aux.getArticulo());
+            st.setString(12, aux.getNif());
+            st.setString(13, aux.getSancionado());
+            st.setString(14, aux.getLocalidad());
+            st.setString(15, aux.getMatricula());
+            st.setString(16, aux.getCuantia());
+            st.setString(17, aux.getPuntos());
+            st.setString(18, aux.getLinea());
 
             st.execute();
         }
@@ -373,6 +379,7 @@ public class Insercion extends Task {
         aux.setPuntos(splitIns_valPuntos(split[14].trim()));
         aux.setLocalidad(split[15].trim());
         aux.setLinea(split[16].trim());
+        aux.setFechaVencimiento();
 
         multas.add(aux);
     }

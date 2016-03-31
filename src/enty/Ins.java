@@ -1,9 +1,11 @@
 package enty;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import util.CalculaNif;
+import util.Dates;
 import util.Regex;
 
 /**
@@ -13,10 +15,11 @@ import util.Regex;
 public class Ins {
 
     private Date fechaPublicacion;
+    private Date fechaVencimiento;
     private String nBoe;
     private String organismo;
     private String fase;
-    private String plazo;
+    private Plazo plazo;
     private String codigoSancion;
     private String expediente;
     private Date fechaMulta;
@@ -66,11 +69,27 @@ public class Ins {
     }
 
     public String getPlazo() {
-        return plazo;
+        return plazo.toString();
     }
 
     public void setPlazo(String plazo) {
-        this.plazo = plazo;
+        switch (plazo) {
+            case "10D":
+                this.plazo = Plazo.D10;
+                break;
+            case "15D":
+                this.plazo = Plazo.D15;
+                break;
+            case "20D":
+                this.plazo = Plazo.D20;
+                break;
+            case "1M":
+                this.plazo = Plazo.M1;
+                break;
+            case "2M":
+                this.plazo = Plazo.M2;
+                break;
+        }
     }
 
     public String getCodigoSancion() {
@@ -102,7 +121,7 @@ public class Ins {
     }
 
     public void setArticulo(String articulo) {
-        this.articulo = resize(articulo,80);
+        this.articulo = resize(articulo, 80);
     }
 
     public String getNif() {
@@ -110,7 +129,7 @@ public class Ins {
     }
 
     public void setNif(String nif) {
-        this.nif = resize(checkNifPattern(checkNif(limpia(nif))),15);
+        this.nif = resize(checkNifPattern(checkNif(limpia(nif))), 15);
     }
 
     public String getTipoJuridico() {
@@ -126,7 +145,7 @@ public class Ins {
     }
 
     public void setSancionado(String sancionado) {
-        this.sancionado = resize(sancionado,100);
+        this.sancionado = resize(sancionado, 100);
     }
 
     public String getMatricula() {
@@ -134,7 +153,7 @@ public class Ins {
     }
 
     public void setMatricula(String matricula) {
-        this.matricula = resize(matricula,12);
+        this.matricula = resize(matricula, 12);
     }
 
     public String getCuantia() {
@@ -142,7 +161,7 @@ public class Ins {
     }
 
     public void setCuantia(String cuantia) {
-        this.cuantia = resize(cuantia,15);
+        this.cuantia = resize(cuantia, 15);
     }
 
     public String getPuntos() {
@@ -150,7 +169,7 @@ public class Ins {
     }
 
     public void setPuntos(String puntos) {
-        this.puntos = resize(puntos,3);
+        this.puntos = resize(puntos, 3);
     }
 
     public String getLocalidad() {
@@ -158,7 +177,7 @@ public class Ins {
     }
 
     public void setLocalidad(String localidad) {
-        this.localidad = resize(localidad,100);
+        this.localidad = resize(localidad, 100);
     }
 
     public String getLinea() {
@@ -166,7 +185,35 @@ public class Ins {
     }
 
     public void setLinea(String linea) {
-        this.linea = resize(linea,300);
+        this.linea = resize(linea, 300);
+    }
+
+    public void setFechaVencimiento() {
+        LocalDate publicacion = Dates.asLocalDate(this.fechaPublicacion);
+        
+        switch(this.plazo){
+            case D10:
+                publicacion.plusDays(10);
+                break;
+            case D15:
+                publicacion.plusDays(15);
+                break;
+            case D20:
+                publicacion.plusDays(20);
+                break;
+            case M1:
+                publicacion.plusMonths(1);
+                break;
+            case M2:
+                publicacion.plusMonths(2);
+                break;
+        }
+
+        this.fechaVencimiento=Dates.asDate(publicacion);
+    }
+
+    public Date getFechaVencimiento() {
+        return this.fechaVencimiento;
     }
 
     private String resize(String aux, int size) {
@@ -199,12 +246,10 @@ public class Ins {
         try {
             if (nif.length() < 9) {
                 aux = cn.calcular(nif);
+            } else if (cn.isvalido(nif)) {
+                aux = nif;
             } else {
-                if (cn.isvalido(nif)) {
-                    aux = nif;
-                } else {
-                    aux = cn.calcular(nif);
-                }
+                aux = cn.calcular(nif);
             }
 
             return aux;
