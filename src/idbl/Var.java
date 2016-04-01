@@ -21,7 +21,7 @@ import sql.Conexion;
  */
 public class Var {
 
-    private static final Logger log = LogManager.getLogger(Var.class);
+    private static final Logger LOG = LogManager.getLogger(Var.class);
     public static Conexion con;
     public static boolean insercionDoc;
     public static boolean mailAviso;
@@ -42,7 +42,7 @@ public class Var {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException ex) {
-            log.fatal(ex);
+            LOG.fatal(ex);
         }
     }
 
@@ -136,7 +136,7 @@ public class Var {
                 listFases.add(aux);
             }
         } catch (IOException | JDOMException io) {
-            log.error(io);
+            LOG.error(io);
         }
     }
 
