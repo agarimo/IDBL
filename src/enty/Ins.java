@@ -69,7 +69,7 @@ public class Ins {
     }
 
     public String getPlazo() {
-        return plazo.toString();
+        return plazo.getValue();
     }
 
     public void setPlazo(String plazo) {
@@ -193,19 +193,19 @@ public class Ins {
         
         switch(this.plazo){
             case D10:
-                publicacion.plusDays(10);
+                publicacion=publicacion.plusDays(10);
                 break;
             case D15:
-                publicacion.plusDays(15);
+                publicacion=publicacion.plusDays(15);
                 break;
             case D20:
-                publicacion.plusDays(20);
+                publicacion=publicacion.plusDays(20);
                 break;
             case M1:
-                publicacion.plusMonths(1);
+                publicacion=publicacion.plusMonths(1);
                 break;
             case M2:
-                publicacion.plusMonths(2);
+                publicacion=publicacion.plusMonths(2);
                 break;
         }
 

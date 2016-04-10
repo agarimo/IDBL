@@ -266,6 +266,7 @@ public class Insercion extends Task {
             st.setString(17, aux.getPuntos());
             st.setString(18, aux.getLinea());
 
+            System.out.println();
             st.execute();
         }
 
