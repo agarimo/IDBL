@@ -77,7 +77,7 @@ public class Documento {
     public URL getLink(){
         URL url = null;
         try {
-            url = new URL("http://boe.es/boe_n/dias/"+this.fecha.replace("-", "/")+"/not.php?id="+this.codigo);
+            url = new URL("https://boe.es/boe_n/dias/"+this.fecha.replace("-", "/")+"/not.php?id="+this.codigo);
         } catch (MalformedURLException ex) {
             Logger.getLogger(Documento.class.getName()).log(Level.SEVERE, null, ex);
         }
